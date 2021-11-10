@@ -60,7 +60,8 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	String selected;
 	Variant::Type type;
 	String base_type;
-	ObjectID script;
+	Ref<Script> script;
+//	ObjectID script_old;
 	Object *instance;
 	bool virtuals_only;
 	bool seq_connect;
