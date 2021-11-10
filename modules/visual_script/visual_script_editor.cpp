@@ -1926,7 +1926,8 @@ void VisualScriptEditor::_generic_search(String p_base_type, Vector2 pos, bool n
 		port_action_pos = graph->get_viewport()->get_mouse_position() - graph->get_global_position();
 	}
 
-	new_connect_node_select->select_from_visual_script(p_base_type, false, false); // neither connecting nor reset text
+//	new_connect_node_select->select_from_visual_script(p_base_type, false, false); // neither connecting nor reset text
+	new_connect_node_select->select_from_script(script,"", false, false); // neither connecting nor reset text
 
 	// Ensure that the dialog fits inside the graph.
 	Size2 bounds = graph->get_global_position() + graph->get_size() - new_connect_node_select->get_size();

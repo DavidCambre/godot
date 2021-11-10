@@ -87,55 +87,93 @@ void VisualScriptPropertySelector::_update_search() {
 	help_bit->set_text("");
 
 	TreeItem *root = search_options->create_item();
-	bool found = false;
+
+	// Allow using spaces in place of underscores in the search string (makes the search more fault-tolerant).
+	const String search_text = search_box->get_text().replace(" ", "_");
+
+	List<PropertyInfo> props;
+	List<MethodInfo> methods;
+
 	StringName base = base_type;
 	List<StringName> base_list;
-	while (base) {
-		base_list.push_back(base);
-		base = ClassDB::get_parent_class_nocheck(base);
+
+	if (instance) {
+		instance->get_property_list(&props, true);
+		instance->get_method_list(&methods);
+	} else if (type != Variant::NIL) {
+		Variant v;
+		Callable::CallError ce;
+		Variant::construct(type, v, nullptr, 0, ce);
+
+		v.get_property_list(&props);
+		v.get_method_list(&methods);
+	} else {
+		Object *obj = ObjectDB::get_instance(script);
+		if (Object::cast_to<Script>(obj)) {
+			props.push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY));
+			methods.push_back(MethodInfo("*Script Methods"));
+			Object::cast_to<Script>(obj)->get_script_property_list(&props);
+			Object::cast_to<Script>(obj)->get_script_method_list(&methods);
+		}
+
+		StringName base = base_type;
+//		List<StringName> base_list;
+		while (base) {
+			base_list.push_back(base);
+			methods.push_back(MethodInfo("*" + String(base)));
+			ClassDB::get_method_list(base, &methods, true, true);
+			ClassDB::get_property_list(base, &props, true);
+			base = ClassDB::get_parent_class(base);
+		}
 	}
+	
+	TreeItem *category = nullptr;
+
+	bool found = false;
+
+	Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
+		vbc->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("String"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Vector2i"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Rect2"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Rect2i"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("AABB"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("StringName"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("RID"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("MiniObject"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Callable"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Signal"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Dictionary"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("Array"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("PackedByteArray"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("PackedInt32Array"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("PackedInt64Array"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("PackedFloat32Array"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("PackedFloat64Array"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("PackedStringArray"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("PackedVector2Array"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("PackedVector3Array"), SNAME("EditorIcons")),
+		vbc->get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
+	};
 
 	for (const StringName &E : base_list) {
-		List<MethodInfo> methods;
-		List<PropertyInfo> props;
-		TreeItem *category = nullptr;
-		Ref<Texture2D> type_icons[Variant::VARIANT_MAX] = {
-			vbc->get_theme_icon(SNAME("Variant"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("bool"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("int"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("float"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("String"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Vector2"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Vector2i"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Rect2"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Rect2i"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Vector3"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Vector3i"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Transform2D"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Plane"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Quaternion"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("AABB"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Basis"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Transform3D"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Color"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("StringName"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("NodePath"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("RID"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("MiniObject"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Callable"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Signal"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Dictionary"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("Array"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("PackedByteArray"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("PackedInt32Array"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("PackedInt64Array"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("PackedFloat32Array"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("PackedFloat64Array"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("PackedStringArray"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("PackedVector2Array"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("PackedVector3Array"), SNAME("EditorIcons")),
-			vbc->get_theme_icon(SNAME("PackedColorArray"), SNAME("EditorIcons"))
-		};
+//		List<MethodInfo> methods;
+//		List<PropertyInfo> props;
+//		TreeItem *category = nullptr;
+		
 		{
 			String b = String(E);
 			category = search_options->create_item(root);
@@ -149,7 +187,7 @@ void VisualScriptPropertySelector::_update_search() {
 			}
 		}
 		if (properties || seq_connect) {
-			if (instance) {
+/*			if (instance) {
 				instance->get_property_list(&props, true);
 			} else {
 				Object *obj = ObjectDB::get_instance(script);
@@ -158,7 +196,7 @@ void VisualScriptPropertySelector::_update_search() {
 				} else {
 					ClassDB::get_property_list(E, &props, true);
 				}
-			}
+			}*/
 			for (const PropertyInfo &F : props) {
 				if (!(F.usage & PROPERTY_USAGE_EDITOR) && !(F.usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
 					continue;
