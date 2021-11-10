@@ -1928,9 +1928,6 @@ void VisualScriptEditor::_generic_search(String p_base_type, Vector2 pos, bool n
 
 	new_connect_node_select->select_from_script(script,"", false, false); // neither connecting nor reset text
 
-
-//	new_connect_node_select->select_from_visual_script(p_base_type, false, false); // neither connecting nor reset text
-
 	// Ensure that the dialog fits inside the graph.
 	Size2 bounds = graph->get_global_position() + graph->get_size() - new_connect_node_select->get_size();
 	pos.x = pos.x > bounds.x ? bounds.x : pos.x;

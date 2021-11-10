@@ -91,14 +91,9 @@ void VisualScriptPropertySelector::_update_search() {
 	// Allow using spaces in place of underscores in the search string (makes the search more fault-tolerant).
 	const String search_text = search_box->get_text().replace(" ", "_");
 
-//	List<PropertyInfo> props;
-//	List<MethodInfo> methods;
-
 	StringName base = base_type;
 	List<StringName> base_list;
 
-//	StringName base = base_type;
-//		List<StringName> base_list;
 	if ( !script.is_null()) {
 		base_list.push_back(script->get_path());
 	}
@@ -106,9 +101,6 @@ void VisualScriptPropertySelector::_update_search() {
 	//	ClassDB::get_inheriters_from_class(); !!!!!!!!!
 	while (base) {
 		base_list.push_back(base);
-//		methods.push_back(MethodInfo("*" + String(base)));
-//		ClassDB::get_method_list(base, &methods, true, true);
-//		ClassDB::get_property_list(base, &props, true);
 		base = ClassDB::get_parent_class(base);
 	}
 	TreeItem *category = nullptr;
@@ -156,7 +148,6 @@ void VisualScriptPropertySelector::_update_search() {
 	for (const StringName &E : base_list) {
 		List<MethodInfo> methods;
 		List<PropertyInfo> props;
-//		TreeItem *category = nullptr;
 		if (instance) {
 			print_error("select from instance needs to tested or removed"); // Debugging !! remove line befor squashing PR !
 			instance->get_property_list(&props, true);
@@ -191,16 +182,6 @@ void VisualScriptPropertySelector::_update_search() {
 			}
 		}
 		if (properties || seq_connect) {
-/*			if (instance) {
-				instance->get_property_list(&props, true);
-			} else {
-				Object *obj = ObjectDB::get_instance(script);
-				if (Object::cast_to<Script>(obj)) {
-					Object::cast_to<Script>(obj)->get_script_property_list(&props);
-				} else {
-					ClassDB::get_property_list(E, &props, true);
-				}
-			}*/
 			for (const PropertyInfo &F : props) {
 				if (!(F.usage & PROPERTY_USAGE_EDITOR) && !(F.usage & PROPERTY_USAGE_SCRIPT_VARIABLE)) {
 					continue;
@@ -243,21 +224,6 @@ void VisualScriptPropertySelector::_update_search() {
 				}
 			}
 		}
-	/*	{
-			if (type != Variant::NIL) {
-				Variant v;
-				Callable::CallError ce;
-				Variant::construct(type, v, nullptr, 0, ce);
-				v.get_method_list(&methods);
-			} else {
-				Object *obj = ObjectDB::get_instance(script->get_instance_id());
-				if (Object::cast_to<Script>(obj)) {
-					Object::cast_to<Script>(obj)->get_script_method_list(&methods);
-				}
-
-				ClassDB::get_method_list(E, &methods, true, true);
-			}
-		}*/
 		for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
 			String name = M->get().name.get_slice(":", 0);
 			if (name.begins_with("_") && !(M->get().flags & METHOD_FLAG_VIRTUAL)) {
@@ -633,7 +599,6 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	selected = p_current;
 	type = Variant::NIL;
 	script = p_script;
-//	script_old = p_script->get_instance_id();
 	properties = true;
 	visual_script_generic = false;
 	instance = nullptr;

@@ -61,7 +61,6 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	Variant::Type type;
 	String base_type;
 	Ref<Script> script;
-//	ObjectID script_old;
 	Object *instance;
 	bool virtuals_only;
 	bool seq_connect;
