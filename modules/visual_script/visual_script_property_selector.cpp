@@ -896,13 +896,12 @@ bool VisualScriptPropertySelector::Runner::_is_class_disabled_by_feature_profile
 	return false;
 }
 
-bool VisualScriptPropertySelector::Runner::_is_class_disabled_by_scope(const StringName & p_class)
-{
+bool VisualScriptPropertySelector::Runner::_is_class_disabled_by_scope(const StringName &p_class) {
 	bool is_base_script = false;
 	if (p_class == base_script) {
 		is_base_script = true;
 	}
-	
+
 	bool is_base = false;
 	if (base_class == p_class) {
 		is_base = true;
@@ -983,7 +982,6 @@ bool VisualScriptPropertySelector::Runner::_phase_match_classes_init() {
 bool VisualScriptPropertySelector::Runner::_phase_match_classes() {
 	DocData::ClassDoc &class_doc = iterator_doc->value();
 	if ((!_is_class_disabled_by_feature_profile(class_doc.name)) && (!_is_class_disabled_by_scope(class_doc.name))) {
-		
 		matches[class_doc.name] = ClassMatch();
 		ClassMatch &match = matches[class_doc.name];
 
