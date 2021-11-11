@@ -34,7 +34,6 @@
 #include "editor/doc_tools.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
-#include <editor/editor_feature_profile.cpp>
 #include "modules/visual_script/visual_script.h"
 #include "modules/visual_script/visual_script_builtin_funcs.h"
 #include "modules/visual_script/visual_script_flow_control.h"
@@ -42,6 +41,7 @@
 #include "modules/visual_script/visual_script_nodes.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
+#include <editor/editor_feature_profile.cpp>
 
 void VisualScriptPropertySelector::_text_changed(const String &p_newtext) {
 	_update_search();
@@ -81,8 +81,7 @@ void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
-void VisualScriptPropertySelector::_update_icons()
-{
+void VisualScriptPropertySelector::_update_icons() {
 	search_box->set_right_icon(vbox->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
 	search_box->add_theme_icon_override("right_icon", vbox->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
@@ -105,7 +104,7 @@ void VisualScriptPropertySelector::_update_search() {
 		search_flags |= SEARCH_SHOW_HIERARCHY;
 	}
 
-//	const String search_text = search_box->get_text().replace(" ", "_");
+	//	const String search_text = search_box->get_text().replace(" ", "_"); !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	const String term = search_box->get_text();
 	// ADJUSTS Scope depending on keywords here.
 
@@ -115,8 +114,7 @@ void VisualScriptPropertySelector::_update_search() {
 	//_update_search_old();
 }
 
-void VisualScriptPropertySelector::_update_search_old()
-{
+void VisualScriptPropertySelector::_update_search_old() {
 	set_title(TTR("Search VisualScript"));
 
 	results_tree->clear();
@@ -135,10 +133,10 @@ void VisualScriptPropertySelector::_update_search_old()
 	}
 
 	//	ClassDB::get_inheriters_from_class(); !!!!!!!!!
-		// To get all inheritors / successors
+	//	// To get all inheritors / successors
 	// To get unfilterd all classes list check
-		// bool EditorHelpSearch::Runner::_phase_match_classes_init() {
-		// iterator_doc = EditorHelp::get_doc_data()->class_list.front();
+	//	// bool EditorHelpSearch::Runner::_phase_match_classes_init() {
+	//	// iterator_doc = EditorHelp::get_doc_data()->class_list.front();
 	while (base) {
 		base_list.push_back(base);
 		base = ClassDB::get_parent_class(base);
@@ -369,18 +367,15 @@ void VisualScriptPropertySelector::_update_search_old()
 	get_ok_button()->set_disabled(root->get_first_child() == nullptr);
 }
 
-void VisualScriptPropertySelector::_search_box_text_changed(const String & p_text)
-{
+void VisualScriptPropertySelector::_search_box_text_changed(const String & p_text) {
 	_update_search();
 }
 
-void VisualScriptPropertySelector::_filter_combo_item_selected(int p_option)
-{
+void VisualScriptPropertySelector::_filter_combo_item_selected(int p_option) {
 	_update_search();
 }
 
-void VisualScriptPropertySelector::_scope_combo_item_selected(int p_option)
-{
+void VisualScriptPropertySelector::_scope_combo_item_selected(int p_option) {
 	_update_search();
 }
 
@@ -612,11 +607,11 @@ void VisualScriptPropertySelector::_notification(int p_what) {
 					// Search done.
 
 					// Only point to the match if it's a new search, and not just reopening a old one.
-	//				if (!old_search) {
-	//					results_tree->ensure_cursor_is_visible();
-	//				} else {
-	//					old_search = false;
-	//				}
+					//if (!old_search) {
+					//	results_tree->ensure_cursor_is_visible();
+					//} else {
+					//	old_search = false;
+					//}
 
 					get_ok_button()->set_disabled(!results_tree->get_selected());
 
@@ -815,7 +810,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hbox->add_child(search_box);
 
 	case_sensitive_button = memnew(Button);
-//	case_sensitive_button->set_flat(true); comented until update icon is working
+	//	case_sensitive_button->set_flat(true); comented until update icon is working
 	case_sensitive_button->set_tooltip(TTR("Case Sensitive"));
 	case_sensitive_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_search));
 	case_sensitive_button->set_toggle_mode(true);
@@ -823,7 +818,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hbox->add_child(case_sensitive_button);
 
 	hierarchy_button = memnew(Button);
-//	hierarchy_button->set_flat(true); comented until update icon is working
+	//	hierarchy_button->set_flat(true); comented until update icon is working
 	hierarchy_button->set_tooltip(TTR("Show Hierarchy"));
 	hierarchy_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_search));
 	hierarchy_button->set_toggle_mode(true);
@@ -1272,7 +1267,7 @@ bool VisualScriptPropertySelector::Runner::work(uint64_t slot) {
 	return true;
 }
 
-VisualScriptPropertySelector::Runner::Runner(Control * p_icon_service, Tree * p_results_tree, const String & p_term, int p_search_flags, int p_scope_flags):
+VisualScriptPropertySelector::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, int p_search_flags, int p_scope_flags) :
 		ui_service(p_icon_service),
 		results_tree(p_results_tree),
 		term((p_search_flags & SEARCH_CASE_SENSITIVE) == 0 ? p_term.strip_edges().to_lower() : p_term.strip_edges()),

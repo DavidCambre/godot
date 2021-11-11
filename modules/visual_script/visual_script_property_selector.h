@@ -57,7 +57,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 		SCOPE_INHERITERS = 1 << 1,
 		SCOPE_UNRELATED = 1 << 2,
 		SCOPE_ALL = SCOPE_BASE | SCOPE_INHERITERS | SCOPE_UNRELATED
-		};
+	};
 
 	LineEdit *search_box;
 	Button *search_base_button;
