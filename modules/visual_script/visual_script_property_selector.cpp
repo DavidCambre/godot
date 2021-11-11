@@ -128,7 +128,7 @@ void VisualScriptPropertySelector::_update_search_old() {
 	StringName base = base_type;
 	List<StringName> base_list;
 
-	if ( !script.is_null()) {
+	if (!script.is_null()) {
 		base_list.push_back(script->get_path());
 	}
 
@@ -367,7 +367,7 @@ void VisualScriptPropertySelector::_update_search_old() {
 	get_ok_button()->set_disabled(root->get_first_child() == nullptr);
 }
 
-void VisualScriptPropertySelector::_search_box_text_changed(const String & p_text) {
+void VisualScriptPropertySelector::_search_box_text_changed(const String &p_text) {
 	_update_search();
 }
 
@@ -871,7 +871,6 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	get_ok_button()->set_text(TTR("Open"));
 	get_ok_button()->set_disabled(true);
 	set_hide_on_ok(false);
-
 }
 
 bool VisualScriptPropertySelector::Runner::_is_class_disabled_by_feature_profile(const StringName &p_class) {
