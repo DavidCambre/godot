@@ -37,6 +37,32 @@
 
 class VisualScriptPropertySelector : public ConfirmationDialog {
 	GDCLASS(VisualScriptPropertySelector, ConfirmationDialog);
+	
+	enum SearchFlags {
+		SEARCH_CLASSES = 1 << 0,
+		SEARCH_CONSTRUCTORS = 1 << 1,
+		SEARCH_METHODS = 1 << 2,
+		SEARCH_OPERATORS = 1 << 3,
+		SEARCH_SIGNALS = 1 << 4,
+		SEARCH_CONSTANTS = 1 << 5,
+		SEARCH_PROPERTIES = 1 << 6,
+		SEARCH_THEME_ITEMS = 1 << 7,
+		SEARCH_ALL = SEARCH_CLASSES | SEARCH_CONSTRUCTORS | SEARCH_METHODS | SEARCH_OPERATORS | SEARCH_SIGNALS | SEARCH_CONSTANTS | SEARCH_PROPERTIES | SEARCH_THEME_ITEMS,
+		SEARCH_CASE_SENSITIVE = 1 << 29,
+		SEARCH_SHOW_HIERARCHY = 1 << 30
+	};
+
+	enum Phase {
+		PHASE_MATCH_CLASSES_INIT,
+		PHASE_MATCH_CLASSES,
+		PHASE_CLASS_ITEMS_INIT,
+		PHASE_CLASS_ITEMS,
+		PHASE_MEMBER_ITEMS_INIT,
+		PHASE_MEMBER_ITEMS,
+		PHASE_SELECT_MATCH,
+		PHASE_MAX
+	};
+	int phase = 0;
 
 	LineEdit *search_box;
 	Tree *search_options;
@@ -44,6 +70,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	void _text_changed(const String &p_newtext);
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _update_search();
+	void _update_search_old();
 
 	void create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text);
 	void get_visual_node_names(const String &root_filter, const Set<String> &p_modifiers, bool &found, TreeItem *const root, LineEdit *const search_box);

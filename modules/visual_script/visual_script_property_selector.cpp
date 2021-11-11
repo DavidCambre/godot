@@ -81,6 +81,46 @@ void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 }
 
 void VisualScriptPropertySelector::_update_search() {
+	// SET slice in Process to get Timeouts on itterations.
+	bool phase_done = false;
+	switch (phase) {
+	/*	case PHASE_MATCH_CLASSES_INIT:
+			phase_done = _phase_match_classes_init();
+			break;
+		case PHASE_MATCH_CLASSES:
+			phase_done = _phase_match_classes();
+			break;
+		case PHASE_CLASS_ITEMS_INIT:
+			phase_done = _phase_class_items_init();
+			break;
+		case PHASE_CLASS_ITEMS:
+			phase_done = _phase_class_items();
+			break;
+		case PHASE_MEMBER_ITEMS_INIT:
+			phase_done = _phase_member_items_init();
+			break;
+		case PHASE_MEMBER_ITEMS:
+			phase_done = _phase_member_items();
+			break;
+		case PHASE_SELECT_MATCH:
+			phase_done = _phase_select_match();
+			break;
+		case PHASE_MAX:
+			return true;*/
+		default:
+			WARN_PRINT("Invalid or unhandled phase in EditorHelpSearch::Runner, aborting search.");
+//			return true;
+	};
+
+	if (phase_done) {
+		phase++;
+	}
+//	return false;
+	_update_search_old();
+}
+
+void VisualScriptPropertySelector::_update_search_old()
+{
 	set_title(TTR("Search VisualScript"));
 
 	search_options->clear();
@@ -99,6 +139,10 @@ void VisualScriptPropertySelector::_update_search() {
 	}
 	
 	//	ClassDB::get_inheriters_from_class(); !!!!!!!!!
+		// To get all inheritors / successors
+	// To get unfilterd all classes list check
+		// bool EditorHelpSearch::Runner::_phase_match_classes_init() {
+		// iterator_doc = EditorHelp::get_doc_data()->class_list.front();
 	while (base) {
 		base_list.push_back(base);
 		base = ClassDB::get_parent_class(base);
