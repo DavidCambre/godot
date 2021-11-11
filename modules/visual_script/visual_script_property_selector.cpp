@@ -604,7 +604,7 @@ void VisualScriptPropertySelector::_notification(int p_what) {
 			connect("confirmed", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
 			_update_icons();
 		} break;
-									
+
 		case NOTIFICATION_PROCESS: {
 			// Update background search.
 			if (search.is_valid()) {
@@ -805,7 +805,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	// Create the search box and filter controls (at the top).
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	vbox->add_margin_child(TTR("Search:"), hbox);
-	
+
 	search_box = memnew(LineEdit);
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -953,6 +953,11 @@ bool VisualScriptPropertySelector::Runner::_phase_match_classes() {
 		ClassMatch &match = matches[class_doc.name];
 
 		match.doc = &class_doc;
+
+		// Match scope /temp to remove build errros
+		if (scope_flags & SCOPE_ALL) {
+			match.name = term == "" || _match_string(term, class_doc.name);
+		}
 
 		// Match class name.
 		if (search_flags & SEARCH_CLASSES) {
