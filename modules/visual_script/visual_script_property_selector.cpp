@@ -56,20 +56,20 @@ void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 			case KEY_DOWN:
 			case KEY_PAGEUP:
 			case KEY_PAGEDOWN: {
-				search_options->gui_input(k);
+				results_tree->gui_input(k);
 				search_box->accept_event();
 
-				TreeItem *root = search_options->get_root();
+				TreeItem *root = results_tree->get_root();
 				if (!root->get_first_child()) {
 					break;
 				}
 
-				TreeItem *current = search_options->get_selected();
+				TreeItem *current = results_tree->get_selected();
 
-				TreeItem *item = search_options->get_next_selected(root);
+				TreeItem *item = results_tree->get_next_selected(root);
 				while (item) {
 					item->deselect(0);
-					item = search_options->get_next_selected(item);
+					item = results_tree->get_next_selected(item);
 				}
 
 				current->select(0);
@@ -95,10 +95,9 @@ void VisualScriptPropertySelector::_update_icons()
 }
 
 void VisualScriptPropertySelector::_update_search() {
-//	const String search_text = search_box->get_text().replace(" ", "_");
-	const String term = search_box->get_text();
 
 	int search_flags = filter_combo->get_selected_id();
+	int scope_flags = scope_combo->get_selected_id();
 	if (case_sensitive_button->is_pressed()) {
 		search_flags |= SEARCH_CASE_SENSITIVE;
 	}
@@ -106,8 +105,13 @@ void VisualScriptPropertySelector::_update_search() {
 		search_flags |= SEARCH_SHOW_HIERARCHY;
 	}
 	
+//	const String search_text = search_box->get_text().replace(" ", "_");
+	const String term = search_box->get_text();
+	// ADJUSTS Scope depending on keywords here.
+
+	
 	//search = Ref<Runner>(memnew(Runner(results_tree, results_tree, term, search_flags)));
-	search = Ref<Runner>(memnew(Runner(search_options, search_options, term, search_flags)));
+	search = Ref<Runner>(memnew(Runner(results_tree, results_tree, term, search_flags)));
 	set_process(true);
 	//_update_search_old();
 }
@@ -116,10 +120,10 @@ void VisualScriptPropertySelector::_update_search_old()
 {
 	set_title(TTR("Search VisualScript"));
 
-	search_options->clear();
+	results_tree->clear();
 	help_bit->set_text("");
 
-	TreeItem *root = search_options->create_item();
+	TreeItem *root = results_tree->create_item();
 
 	// Allow using spaces in place of underscores in the search string (makes the search more fault-tolerant).
 	const String search_text = search_box->get_text().replace(" ", "_");
@@ -208,7 +212,7 @@ void VisualScriptPropertySelector::_update_search_old()
 				
 		{
 			String b = String(E);
-			category = search_options->create_item(root);
+			category = results_tree->create_item(root);
 			if (category) {
 				category->set_text(0, b.replace_first("*", ""));
 				category->set_selectable(0, false);
@@ -236,7 +240,7 @@ void VisualScriptPropertySelector::_update_search_old()
 				String input = search_box->get_text().capitalize();
 
 				if (input == String() || get_text_raw.findn(input) != -1 || get_text.findn(input) != -1) {
-					TreeItem *item = search_options->create_item(category ? category : root);
+					TreeItem *item = results_tree->create_item(category ? category : root);
 					item->set_text(0, get_text);
 					item->set_metadata(0, F.name);
 					item->set_icon(0, type_icons[F.type]);
@@ -249,7 +253,7 @@ void VisualScriptPropertySelector::_update_search_old()
 				}
 
 				if (input == String() || set_text_raw.findn(input) != -1 || set_text.findn(input) != -1) {
-					TreeItem *item = search_options->create_item(category ? category : root);
+					TreeItem *item = results_tree->create_item(category ? category : root);
 					item->set_text(0, set_text);
 					item->set_metadata(0, F.name);
 					item->set_icon(0, type_icons[F.type]);
@@ -304,7 +308,7 @@ void VisualScriptPropertySelector::_update_search_old()
 				continue;
 			}
 
-			TreeItem *item = search_options->create_item(category ? category : root);
+			TreeItem *item = results_tree->create_item(category ? category : root);
 			item->set_text(0, desc);
 			item->set_icon(0, vbox->get_theme_icon(SNAME("MemberMethod"), SNAME("EditorIcons")));
 			item->set_metadata(0, name);
@@ -357,7 +361,7 @@ void VisualScriptPropertySelector::_update_search_old()
 		get_visual_node_names("", Set<String>(), found, root, search_box);
 	}
 
-	TreeItem *selected_item = search_options->search_item_text(search_box->get_text());
+	TreeItem *selected_item = results_tree->search_item_text(search_box->get_text());
 	if (!found && selected_item != nullptr) {
 		selected_item->select(0);
 		found = true;
@@ -376,9 +380,14 @@ void VisualScriptPropertySelector::_filter_combo_item_selected(int p_option)
 	_update_search();
 }
 
+void VisualScriptPropertySelector::_scope_combo_item_selected(int p_option)
+{
+	_update_search();
+}
+
 void VisualScriptPropertySelector::create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text) {
 	if (search_input == String() || text.findn(search_input) != -1) {
-		TreeItem *item = search_options->create_item(root);
+		TreeItem *item = results_tree->create_item(root);
 		item->set_text(0, text);
 		item->set_icon(0, vbox->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons")));
 		item->set_metadata(0, name);
@@ -431,7 +440,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 			continue;
 		}
 
-		TreeItem *item = search_options->create_item(root);
+		TreeItem *item = results_tree->create_item(root);
 		Ref<VisualScriptNode> vnode = VisualScriptLanguage::singleton->create_node_from_name(E);
 		Ref<VisualScriptOperator> vnode_operator = vnode;
 		String type_name;
@@ -476,7 +485,7 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 }
 
 void VisualScriptPropertySelector::_confirmed() {
-	TreeItem *ti = search_options->get_selected();
+	TreeItem *ti = results_tree->get_selected();
 	if (!ti) {
 		return;
 	}
@@ -487,7 +496,7 @@ void VisualScriptPropertySelector::_confirmed() {
 void VisualScriptPropertySelector::_item_selected() {
 	help_bit->set_text("");
 
-	TreeItem *item = search_options->get_selected();
+	TreeItem *item = results_tree->get_selected();
 	if (!item) {
 		return;
 	}
@@ -610,7 +619,7 @@ void VisualScriptPropertySelector::_notification(int p_what) {
 	//					old_search = false;
 	//				}
 
-					get_ok_button()->set_disabled(!search_options->get_selected());
+					get_ok_button()->set_disabled(!results_tree->get_selected());
 
 					search = Ref<Runner>();
 					set_process(false);
@@ -789,6 +798,9 @@ void VisualScriptPropertySelector::_bind_methods() {
 }
 
 VisualScriptPropertySelector::VisualScriptPropertySelector() {
+	virtuals_only = false;
+	seq_connect = false;
+
 	vbox = memnew(VBoxContainer);
 	add_child(vbox);
 	// Create the search box and filter controls (at the top).
@@ -802,7 +814,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	search_box->connect("gui_input", callable_mp(this, &VisualScriptPropertySelector::_sbox_input));
 	register_text_enter(search_box);
 	hbox->add_child(search_box);
-	
+
 	case_sensitive_button = memnew(Button);
 //	case_sensitive_button->set_flat(true); comented until update icon is working
 	case_sensitive_button->set_tooltip(TTR("Case Sensitive"));
@@ -835,25 +847,37 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
 	filter_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_filter_combo_item_selected));
 	hbox->add_child(filter_combo);
+	
+	scope_combo = memnew(OptionButton);
+	scope_combo->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
+	scope_combo->set_stretch_ratio(0); // Fixed width.
+	scope_combo->add_item(TTR("Search All"), SCOPE_ALL);
+	scope_combo->add_separator();
+	scope_combo->add_item(TTR("Search Base"), SCOPE_BASE);
+	scope_combo->add_item(TTR("Search Iheritors"), SCOPE_INHERITERS);
+	scope_combo->add_item(TTR("Search Unrelated"), SCOPE_UNRELATED);
+	scope_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_scope_combo_item_selected));
+	hbox->add_child(scope_combo);
 
-	search_options = memnew(Tree);
-	vbox->add_margin_child(TTR("Matches:"), search_options, true);
-	get_ok_button()->set_text(TTR("Open"));
-	get_ok_button()->set_disabled(true);
-
-	set_hide_on_ok(false);
-	search_options->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
-	search_options->connect("cell_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
-	search_options->set_hide_root(true);
-	search_options->set_hide_folding(true);
-	virtuals_only = false;
-	seq_connect = false;
+	results_tree = memnew(Tree);
+	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	results_tree->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
+	results_tree->connect("cell_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
+	results_tree->set_hide_root(true);
+	results_tree->set_hide_folding(true);
+	results_tree->set_columns(3);
+	results_tree->set_column_expand(1, false);
+	results_tree->set_column_expand(2, false);
+	vbox->add_margin_child(TTR("Matches:"), results_tree, true);
+	
 	help_bit = memnew(EditorHelpBit);
 	vbox->add_margin_child(TTR("Description:"), help_bit);
 	help_bit->connect("request_hide", callable_mp(this, &VisualScriptPropertySelector::_hide_requested));
-	search_options->set_columns(3);
-	search_options->set_column_expand(1, false);
-	search_options->set_column_expand(2, false);
+
+	get_ok_button()->set_text(TTR("Open"));
+	get_ok_button()->set_disabled(true);
+	set_hide_on_ok(false);
+
 }
 
 bool VisualScriptPropertySelector::Runner::_is_class_disabled_by_feature_profile(const StringName &p_class) {

@@ -49,17 +49,28 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 		SEARCH_THEME_ITEMS = 1 << 7,
 		SEARCH_ALL = SEARCH_CLASSES | SEARCH_CONSTRUCTORS | SEARCH_METHODS | SEARCH_OPERATORS | SEARCH_SIGNALS | SEARCH_CONSTANTS | SEARCH_PROPERTIES | SEARCH_THEME_ITEMS,
 		SEARCH_CASE_SENSITIVE = 1 << 29,
-		SEARCH_SHOW_HIERARCHY = 1 << 30
+		SEARCH_SHOW_HIERARCHY = 1 << 30,
 	};
-
 	int phase = 0;
 
+	enum ScopeFlags {
+		SCOPE_BASE = 1 << 0,
+		SCOPE_INHERITERS = 1 << 1,
+		SCOPE_UNRELATED = 1 << 2,
+		SCOPE_ALL = SCOPE_BASE | SCOPE_INHERITERS | SCOPE_UNRELATED
+		};
+
+	int scope = 0;
+
 	LineEdit *search_box;
+	Button *search_base_button;
+	Button *search_inheritors_button;
+	Button *search_unrelated_button;
 	Button *case_sensitive_button;
 	Button *hierarchy_button;
 	OptionButton *filter_combo;
-	Tree *search_options;
-	Tree *results_tree; // runner tree
+	OptionButton *scope_combo;
+	Tree *results_tree;
 	
 	class Runner;
 	Ref<Runner> search;
@@ -72,6 +83,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 
 	void _search_box_text_changed(const String &p_text);
 	void _filter_combo_item_selected(int p_option);
+	void _scope_combo_item_selected(int p_option);
 
 	void create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text);
 	void get_visual_node_names(const String &root_filter, const Set<String> &p_modifiers, bool &found, TreeItem *const root, LineEdit *const search_box);
