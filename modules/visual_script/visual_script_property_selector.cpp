@@ -95,23 +95,22 @@ void VisualScriptPropertySelector::_update_icons()
 }
 
 void VisualScriptPropertySelector::_update_search() {
-
 	int search_flags = filter_combo->get_selected_id();
 	int scope_flags = scope_combo->get_selected_id();
+
 	if (case_sensitive_button->is_pressed()) {
 		search_flags |= SEARCH_CASE_SENSITIVE;
 	}
 	if (hierarchy_button->is_pressed()) {
 		search_flags |= SEARCH_SHOW_HIERARCHY;
 	}
-	
+
 //	const String search_text = search_box->get_text().replace(" ", "_");
 	const String term = search_box->get_text();
 	// ADJUSTS Scope depending on keywords here.
 
-	
 	//search = Ref<Runner>(memnew(Runner(results_tree, results_tree, term, search_flags)));
-	search = Ref<Runner>(memnew(Runner(results_tree, results_tree, term, search_flags)));
+	search = Ref<Runner>(memnew(Runner(results_tree, results_tree, term, search_flags, scope_flags)));
 	set_process(true);
 	//_update_search_old();
 }
@@ -134,7 +133,7 @@ void VisualScriptPropertySelector::_update_search_old()
 	if ( !script.is_null()) {
 		base_list.push_back(script->get_path());
 	}
-	
+
 	//	ClassDB::get_inheriters_from_class(); !!!!!!!!!
 		// To get all inheritors / successors
 	// To get unfilterd all classes list check
@@ -207,9 +206,9 @@ void VisualScriptPropertySelector::_update_search_old()
 			if (Object::cast_to<Script>(obj)) {
 				Object::cast_to<Script>(obj)->get_script_property_list(&props);
 				Object::cast_to<Script>(obj)->get_script_method_list(&methods);
-			} 
+			}
 		}
-				
+
 		{
 			String b = String(E);
 			category = results_tree->create_item(root);
@@ -847,14 +846,14 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
 	filter_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_filter_combo_item_selected));
 	hbox->add_child(filter_combo);
-	
+
 	scope_combo = memnew(OptionButton);
 	scope_combo->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	scope_combo->set_stretch_ratio(0); // Fixed width.
 	scope_combo->add_item(TTR("Search All"), SCOPE_ALL);
 	scope_combo->add_separator();
 	scope_combo->add_item(TTR("Search Base"), SCOPE_BASE);
-	scope_combo->add_item(TTR("Search Iheritors"), SCOPE_INHERITERS);
+	scope_combo->add_item(TTR("Search Inheriters"), SCOPE_INHERITERS);
 	scope_combo->add_item(TTR("Search Unrelated"), SCOPE_UNRELATED);
 	scope_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_scope_combo_item_selected));
 	hbox->add_child(scope_combo);
@@ -869,7 +868,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	results_tree->set_column_expand(1, false);
 	results_tree->set_column_expand(2, false);
 	vbox->add_margin_child(TTR("Matches:"), results_tree, true);
-	
+
 	help_bit = memnew(EditorHelpBit);
 	vbox->add_margin_child(TTR("Description:"), help_bit);
 	help_bit->connect("request_hide", callable_mp(this, &VisualScriptPropertySelector::_hide_requested));
@@ -1268,11 +1267,12 @@ bool VisualScriptPropertySelector::Runner::work(uint64_t slot) {
 	return true;
 }
 
-VisualScriptPropertySelector::Runner::Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, int p_search_flags) :
+VisualScriptPropertySelector::Runner::Runner(Control * p_icon_service, Tree * p_results_tree, const String & p_term, int p_search_flags, int p_scope_flags):
 		ui_service(p_icon_service),
 		results_tree(p_results_tree),
 		term((p_search_flags & SEARCH_CASE_SENSITIVE) == 0 ? p_term.strip_edges().to_lower() : p_term.strip_edges()),
 		search_flags(p_search_flags),
+		scope_flags(p_scope_flags),
 		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))),
 		disabled_color(ui_service->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"))) {
 }

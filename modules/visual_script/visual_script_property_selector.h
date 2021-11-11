@@ -37,7 +37,7 @@
 
 class VisualScriptPropertySelector : public ConfirmationDialog {
 	GDCLASS(VisualScriptPropertySelector, ConfirmationDialog);
-	
+
 	enum SearchFlags {
 		SEARCH_CLASSES = 1 << 0,
 		SEARCH_CONSTRUCTORS = 1 << 1,
@@ -51,7 +51,6 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 		SEARCH_CASE_SENSITIVE = 1 << 29,
 		SEARCH_SHOW_HIERARCHY = 1 << 30,
 	};
-	int phase = 0;
 
 	enum ScopeFlags {
 		SCOPE_BASE = 1 << 0,
@@ -59,8 +58,6 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 		SCOPE_UNRELATED = 1 << 2,
 		SCOPE_ALL = SCOPE_BASE | SCOPE_INHERITERS | SCOPE_UNRELATED
 		};
-
-	int scope = 0;
 
 	LineEdit *search_box;
 	Button *search_base_button;
@@ -71,7 +68,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	OptionButton *filter_combo;
 	OptionButton *scope_combo;
 	Tree *results_tree;
-	
+
 	class Runner;
 	Ref<Runner> search;
 
@@ -161,6 +158,7 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	Tree *results_tree;
 	String term;
 	int search_flags;
+	int scope_flags;
 
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
@@ -198,7 +196,7 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 public:
 	bool work(uint64_t slot = 100000);
 
-	Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, int p_search_flags);
+	Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, int p_search_flags, int p_scope_flags);
 };
 
 #endif // VISUALSCRIPT_PROPERTYSELECTOR_H
