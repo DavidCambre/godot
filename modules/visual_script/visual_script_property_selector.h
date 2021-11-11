@@ -56,7 +56,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 		SCOPE_BASE = 1 << 0,
 		SCOPE_INHERITERS = 1 << 1,
 		SCOPE_UNRELATED = 1 << 2,
-		SCOPE_ALL = SCOPE_BASE | SCOPE_INHERITERS | SCOPE_UNRELATED
+		SCOPE_RELATED = SCOPE_BASE | SCOPE_INHERITERS
 	};
 
 	LineEdit *search_box;
@@ -96,7 +96,10 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	bool connecting;
 	String selected;
 	Variant::Type type;
-	String base_type;
+//	String base_name;
+	String base_type; // Deprisiated
+	String base_script;
+	String base_class;
 	Ref<Script> script;
 	Object *instance;
 	bool virtuals_only;
@@ -157,6 +160,8 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	Control *ui_service;
 	Tree *results_tree;
 	String term;
+	String base_script;
+	String base_class;
 	int search_flags;
 	int scope_flags;
 
@@ -172,6 +177,7 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	float match_highest_score = 0;
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
+	bool _is_class_disabled_by_scope(const StringName &p_class);
 
 	bool _slice();
 	bool _phase_match_classes_init();
@@ -196,7 +202,7 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 public:
 	bool work(uint64_t slot = 100000);
 
-	Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, int p_search_flags, int p_scope_flags);
+	Runner(Control *p_icon_service, Tree *p_results_tree, const String &p_term, const String &p_base_class, const String &p_base_script, int p_search_flags, int p_scope_flags);
 };
 
 #endif // VISUALSCRIPT_PROPERTYSELECTOR_H
