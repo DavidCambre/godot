@@ -585,8 +585,33 @@ void VisualScriptPropertySelector::_hide_requested() {
 }
 
 void VisualScriptPropertySelector::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connect("confirmed", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			connect("confirmed", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
+		} break;
+									
+		case NOTIFICATION_PROCESS: {
+			// Update background search.
+	/*		if (search.is_valid()) {
+				if (search->work()) {
+					// Search done.
+
+					// Only point to the match if it's a new search, and not just reopening a old one.
+					if (!old_search) {
+						results_tree->ensure_cursor_is_visible();
+					} else {
+						old_search = false;
+					}
+
+					get_ok_button()->set_disabled(!results_tree->get_selected());
+
+					search = Ref<Runner>();
+					set_process(false);
+				}
+			} else {
+				set_process(false);
+			}*/
+		} break;
 	}
 }
 
