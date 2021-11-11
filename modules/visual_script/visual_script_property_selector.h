@@ -96,10 +96,9 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	bool connecting;
 	String selected;
 	Variant::Type type;
-//	String base_name;
-	String base_type; // Deprisiated
-	String base_script;
+	String base_type; // depreciated
 	String base_class;
+	String base_script;
 	Ref<Script> script;
 	Object *instance;
 	bool virtuals_only;
