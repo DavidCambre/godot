@@ -159,8 +159,8 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	Control *ui_service;
 	Tree *results_tree;
 	String term;
-	String base_script;
 	String base_class;
+	String base_script;
 	int search_flags;
 	int scope_flags;
 
