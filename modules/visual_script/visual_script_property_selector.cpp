@@ -860,10 +860,17 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	results_tree->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
 	results_tree->connect("cell_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
 	results_tree->set_hide_root(true);
-	results_tree->set_hide_folding(true);
-	results_tree->set_columns(3);
+	//	results_tree->set_hide_folding(true);
+	//	results_tree->set_columns(3);
+	results_tree->set_columns(2);
+	results_tree->set_column_title(0, TTR("Name"));
+	results_tree->set_column_clip_content(0, true);
+	results_tree->set_column_title(1, TTR("Member Type"));
 	results_tree->set_column_expand(1, false);
-	results_tree->set_column_expand(2, false);
+	results_tree->set_column_custom_minimum_width(1, 150 * EDSCALE);
+	results_tree->set_column_clip_content(1, true);
+	//	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
+	//	results_tree->set_column_expand(2, false);
 	vbox->add_margin_child(TTR("Matches:"), results_tree, true);
 
 	help_bit = memnew(EditorHelpBit);
@@ -936,6 +943,9 @@ bool VisualScriptPropertySelector::Runner::_is_class_disabled_by_scope(const Str
 bool VisualScriptPropertySelector::Runner::_slice() {
 	bool phase_done = false;
 	switch (phase) {
+		case PHASE_MATCH_SCRIPT_CLASSES_INIT:
+			phase_done = _phase_match_script_classes_init();
+			break;
 		case PHASE_MATCH_CLASSES_INIT:
 			phase_done = _phase_match_classes_init();
 			break;
@@ -970,8 +980,30 @@ bool VisualScriptPropertySelector::Runner::_slice() {
 	return false;
 }
 
+bool VisualScriptPropertySelector::Runner::_phase_match_script_classes_init() {
+	script_class_list = Map<String, DocData::ClassDoc>();
+
+	DocData::ClassDoc base_class_doc = DocData::ClassDoc();
+	base_class_doc.inherits = base_class;
+	base_class_doc.name = base_script;
+
+	script_methods.clear();
+
+	//	Tyed to get scriptinfo in docs this aprouchs seems overcomplicated
+	//	RES s = ResourceLoader::load(base_script);
+	//	Object *sss = s->get("script");
+	//	Object::cast_to<Script>(sss)->get_method_list(base_class_doc.methods);
+	//	List<MethodInfo, DefaultAllocator>();
+	//	Vector<DocData::MethodDoc>();
+
+	script_class_list[base_class_doc.name] = base_class_doc;
+
+	return true;
+}
+
 bool VisualScriptPropertySelector::Runner::_phase_match_classes_init() {
 	iterator_doc = EditorHelp::get_doc_data()->class_list.front();
+
 	matches.clear();
 	matched_item = nullptr;
 	match_highest_score = 0;
@@ -981,7 +1013,8 @@ bool VisualScriptPropertySelector::Runner::_phase_match_classes_init() {
 
 bool VisualScriptPropertySelector::Runner::_phase_match_classes() {
 	DocData::ClassDoc &class_doc = iterator_doc->value();
-	if ((!_is_class_disabled_by_feature_profile(class_doc.name)) && (!_is_class_disabled_by_scope(class_doc.name))) {
+	if (!_is_class_disabled_by_feature_profile(class_doc.name) && !_is_class_disabled_by_scope(class_doc.name)) {
+		// print_error(class_doc.name);
 		matches[class_doc.name] = ClassMatch();
 		ClassMatch &match = matches[class_doc.name];
 
@@ -1004,13 +1037,41 @@ bool VisualScriptPropertySelector::Runner::_phase_match_classes() {
 			}
 		}
 		if (search_flags & SEARCH_METHODS) {
-			for (int i = 0; i < class_doc.methods.size(); i++) {
-				String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
-				if (method_name.find(term) > -1 ||
-						(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
-						(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
-						(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-					match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
+			if (!ClassDB::class_exists(class_doc.name)) {
+				// load script
+				Ref<Script> script;
+				script = ResourceLoader::load(base_script);
+
+				List<MethodInfo> methods;
+				script->get_script_method_list(&methods);
+
+				// greate Method doc's
+				for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
+					DocData::MethodDoc method_doc = DocData::MethodDoc();
+					method_doc.name = M->get().name;
+					script_methods.push_back(method_doc);
+				}
+
+				for (int i = 0; i < script_methods.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? script_methods[i].name : script_methods[i].name.to_lower();
+					// is method string compatable with term
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+						match.methods.push_back(const_cast<DocData::MethodDoc *>(&script_methods[i]));
+					}
+				}
+
+			} else {
+				for (int i = 0; i < class_doc.methods.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
+						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
+					}
 				}
 			}
 		}
@@ -1055,7 +1116,16 @@ bool VisualScriptPropertySelector::Runner::_phase_match_classes() {
 		}
 	}
 
-	iterator_doc = iterator_doc->next();
+	if (!iterator_doc->next()) {
+		if (base_script != "" && class_doc.name != base_script) {
+			iterator_doc = script_class_list.front();
+		} else {
+			iterator_doc = nullptr;
+		}
+	} else {
+		iterator_doc = iterator_doc->next();
+	}
+
 	return !iterator_doc;
 }
 

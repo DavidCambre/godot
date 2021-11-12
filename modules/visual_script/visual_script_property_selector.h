@@ -129,6 +129,7 @@ public:
 
 class VisualScriptPropertySelector::Runner : public RefCounted {
 	enum Phase {
+		PHASE_MATCH_SCRIPT_CLASSES_INIT,
 		PHASE_MATCH_CLASSES_INIT,
 		PHASE_MATCH_CLASSES,
 		PHASE_CLASS_ITEMS_INIT,
@@ -167,6 +168,9 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
+	Map<String, DocData::ClassDoc> script_class_list;
+	List<DocData::MethodDoc> script_methods;
+
 	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
 	Map<String, ClassMatch> matches;
 	Map<String, ClassMatch>::Element *iterator_match = nullptr;
@@ -179,6 +183,7 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	bool _is_class_disabled_by_scope(const StringName &p_class);
 
 	bool _slice();
+	bool _phase_match_script_classes_init();
 	bool _phase_match_classes_init();
 	bool _phase_match_classes();
 	bool _phase_class_items_init();
