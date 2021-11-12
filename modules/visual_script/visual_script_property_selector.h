@@ -195,6 +195,8 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	bool _phase_member_items();
 	bool _phase_select_match();
 
+	List<DocData::MethodDoc> _create_method_docs(Ref<Script> p_script);
+
 	bool _match_string(const String &p_term, const String &p_string) const;
 	void _match_item(TreeItem *p_item, const String &p_text);
 	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);

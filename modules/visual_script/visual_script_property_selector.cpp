@@ -995,6 +995,7 @@ bool VisualScriptPropertySelector::Runner::_phase_match_script_classes_init() {
 	base_class_doc.name = base_script;
 
 	script_methods.clear();
+	scripts_metohods_list = Map<String, List<DocData::MethodDoc>>();
 
 	//	Tyed to get scriptinfo in docs this aprouchs seems overcomplicated
 	//	RES s = ResourceLoader::load(base_script);
@@ -1056,24 +1057,12 @@ bool VisualScriptPropertySelector::Runner::_phase_match_classes() {
 				Ref<Script> script;
 				script = ResourceLoader::load(base_script);
 
-				List<MethodInfo> methods;
-				script->get_script_method_list(&methods);
+				List<DocData::MethodDoc> this_script_methods = _create_method_docs(script);
+				scripts_metohods_list[base_script] = this_script_methods;
 
-				// greate Method doc's
-				List<DocData::MethodDoc> this_script_methods;
-				for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
-					DocData::MethodDoc method_doc = DocData::MethodDoc();
-					method_doc.name = M->get().name;
-					script_methods.push_back(method_doc);
-					this_script_methods.push_back(method_doc);
-					scripts_metohods_list[base_script] = this_script_methods;
-				}
-
-				//for (int i = 0; i < script_methods.size(); i++) {
 				for (int i = 0; i < scripts_metohods_list[base_script].size(); i++) {
-					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? script_methods[i].name : script_methods[i].name.to_lower();
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? scripts_metohods_list[base_script][i].name : scripts_metohods_list[base_script][i].name.to_lower();
 					if (_is_term_consistent_with_method_name(method_name)) {
-						//match.methods.push_back(const_cast<DocData::MethodDoc *>(&script_methods[i]));
 						match.methods.push_back(const_cast<DocData::MethodDoc *>(&scripts_metohods_list[base_script][i]));
 					}
 				}
@@ -1207,6 +1196,20 @@ bool VisualScriptPropertySelector::Runner::_phase_select_match() {
 		matched_item->select(0);
 	}
 	return true;
+}
+
+List<DocData::MethodDoc> VisualScriptPropertySelector::Runner::_create_method_docs(Ref<Script> p_script) {
+	List<MethodInfo> methods;
+	p_script->get_script_method_list(&methods);
+
+	List<DocData::MethodDoc> return_list = List<DocData::MethodDoc>();
+
+	for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
+		DocData::MethodDoc method_doc = DocData::MethodDoc();
+		method_doc.name = M->get().name;
+		return_list.push_back(method_doc);
+	}
+	return return_list;
 }
 
 bool VisualScriptPropertySelector::Runner::_match_string(const String &p_term, const String &p_string) const {
