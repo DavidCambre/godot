@@ -940,6 +940,13 @@ bool VisualScriptPropertySelector::Runner::_is_class_disabled_by_scope(const Str
 	return true;
 }
 
+bool VisualScriptPropertySelector::Runner::_is_term_consistent_with_method_name(const String &p_name) {
+	return p_name.find(term) > -1 ||
+			(term.begins_with(".") && p_name.begins_with(term.substr(1))) ||
+			(term.ends_with("(") && p_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+			(term.begins_with(".") && term.ends_with("(") && p_name == term.substr(1, term.length() - 2).strip_edges());
+}
+
 bool VisualScriptPropertySelector::Runner::_slice() {
 	bool phase_done = false;
 	switch (phase) {
@@ -1037,7 +1044,14 @@ bool VisualScriptPropertySelector::Runner::_phase_match_classes() {
 			}
 		}
 		if (search_flags & SEARCH_METHODS) {
-			if (!ClassDB::class_exists(class_doc.name)) {
+			if (ClassDB::class_exists(class_doc.name)) {
+				for (int i = 0; i < class_doc.methods.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
+					if (_is_term_consistent_with_method_name(method_name)) {
+						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
+					}
+				}
+			} else {
 				// load script
 				Ref<Script> script;
 				script = ResourceLoader::load(base_script);
@@ -1046,31 +1060,21 @@ bool VisualScriptPropertySelector::Runner::_phase_match_classes() {
 				script->get_script_method_list(&methods);
 
 				// greate Method doc's
+				List<DocData::MethodDoc> this_script_methods;
 				for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
 					DocData::MethodDoc method_doc = DocData::MethodDoc();
 					method_doc.name = M->get().name;
 					script_methods.push_back(method_doc);
+					this_script_methods.push_back(method_doc);
+					scripts_metohods_list[base_script] = this_script_methods;
 				}
 
-				for (int i = 0; i < script_methods.size(); i++) {
+				//for (int i = 0; i < script_methods.size(); i++) {
+				for (int i = 0; i < scripts_metohods_list[base_script].size(); i++) {
 					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? script_methods[i].name : script_methods[i].name.to_lower();
-					// is method string compatable with term
-					if (method_name.find(term) > -1 ||
-							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
-							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
-							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-						match.methods.push_back(const_cast<DocData::MethodDoc *>(&script_methods[i]));
-					}
-				}
-
-			} else {
-				for (int i = 0; i < class_doc.methods.size(); i++) {
-					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
-					if (method_name.find(term) > -1 ||
-							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
-							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
-							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
-						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
+					if (_is_term_consistent_with_method_name(method_name)) {
+						//match.methods.push_back(const_cast<DocData::MethodDoc *>(&script_methods[i]));
+						match.methods.push_back(const_cast<DocData::MethodDoc *>(&scripts_metohods_list[base_script][i]));
 					}
 				}
 			}

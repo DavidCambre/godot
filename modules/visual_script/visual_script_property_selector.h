@@ -169,6 +169,7 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	Color disabled_color;
 
 	Map<String, DocData::ClassDoc> script_class_list;
+	Map<String, List<DocData::MethodDoc>> scripts_metohods_list;
 	List<DocData::MethodDoc> script_methods;
 
 	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
@@ -181,6 +182,8 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
 	bool _is_class_disabled_by_scope(const StringName &p_class);
+
+	bool _is_term_consistent_with_method_name(const String &p_name);
 
 	bool _slice();
 	bool _phase_match_script_classes_init();
