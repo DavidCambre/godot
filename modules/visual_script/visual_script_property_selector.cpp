@@ -995,14 +995,7 @@ bool VisualScriptPropertySelector::Runner::_phase_match_script_classes_init() {
 	base_class_doc.name = base_script;
 
 	script_methods.clear();
-	scripts_metohods_list = Map<String, List<DocData::MethodDoc>>();
-
-	//	Tyed to get scriptinfo in docs this aprouchs seems overcomplicated
-	//	RES s = ResourceLoader::load(base_script);
-	//	Object *sss = s->get("script");
-	//	Object::cast_to<Script>(sss)->get_method_list(base_class_doc.methods);
-	//	List<MethodInfo, DefaultAllocator>();
-	//	Vector<DocData::MethodDoc>();
+	scripts_methods_list = Map<String, List<DocData::MethodDoc>>();
 
 	script_class_list[base_class_doc.name] = base_class_doc;
 
@@ -1058,12 +1051,12 @@ bool VisualScriptPropertySelector::Runner::_phase_match_classes() {
 				script = ResourceLoader::load(base_script);
 
 				List<DocData::MethodDoc> this_script_methods = _create_method_docs(script);
-				scripts_metohods_list[base_script] = this_script_methods;
+				scripts_methods_list[base_script] = this_script_methods;
 
-				for (int i = 0; i < scripts_metohods_list[base_script].size(); i++) {
-					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? scripts_metohods_list[base_script][i].name : scripts_metohods_list[base_script][i].name.to_lower();
+				for (int i = 0; i < scripts_methods_list[base_script].size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? scripts_methods_list[base_script][i].name : scripts_methods_list[base_script][i].name.to_lower();
 					if (_is_term_consistent_with_method_name(method_name)) {
-						match.methods.push_back(const_cast<DocData::MethodDoc *>(&scripts_metohods_list[base_script][i]));
+						match.methods.push_back(const_cast<DocData::MethodDoc *>(&scripts_methods_list[base_script][i]));
 					}
 				}
 			}

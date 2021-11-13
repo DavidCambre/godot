@@ -169,7 +169,7 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	Color disabled_color;
 
 	Map<String, DocData::ClassDoc> script_class_list;
-	Map<String, List<DocData::MethodDoc>> scripts_metohods_list;
+	Map<String, List<DocData::MethodDoc>> scripts_methods_list;
 	List<DocData::MethodDoc> script_methods;
 
 	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
