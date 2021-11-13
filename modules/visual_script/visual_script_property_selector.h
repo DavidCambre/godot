@@ -129,9 +129,11 @@ public:
 
 class VisualScriptPropertySelector::Runner : public RefCounted {
 	enum Phase {
-		PHASE_MATCH_SCRIPT_CLASSES_INIT,
 		PHASE_MATCH_CLASSES_INIT,
+		PHASE_MATCH_SCRIPT_CLASSES_INIT,
+		PHASE_MATCH_VISUAL_SCRIPT_NODES_INIT,
 		PHASE_MATCH_CLASSES,
+		PHASE_MATCH_VISUAL_SCRIPT_NODES,
 		PHASE_CLASS_ITEMS_INIT,
 		PHASE_CLASS_ITEMS,
 		PHASE_MEMBER_ITEMS_INIT,
@@ -156,6 +158,34 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 			return name || methods.size() || signals.size() || constants.size() || properties.size() || theme_properties.size();
 		}
 	};
+	
+	struct VisualScriptNodeDoc {
+		String name;
+		String inherits;
+		String category;
+		String brief_description;
+		String description;
+		String return_type;
+		String return_enum;
+		Vector<DocData::ArgumentDoc> arguments;
+	};
+	
+	struct VisualScriptCategoryDoc {
+		String name;
+		String inherits;
+		String category;
+		String brief_description;
+		String description;
+		String return_type;
+		String return_enum;
+		Vector<VisualScriptNodeDoc> visual_script_nodes;
+	};
+
+	struct CategoryMatch {
+		VisualScriptCategoryDoc * doc;
+		bool name = false;
+		Vector<VisualScriptNodeDoc *> visual_script_nodes;
+	};
 
 	Control *ui_service;
 	Tree *results_tree;
@@ -168,15 +198,23 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
+	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
 	Map<String, DocData::ClassDoc> script_class_list;
 	Map<String, List<DocData::MethodDoc>> scripts_methods_list;
+	Map<String, VisualScriptNodeDoc> visual_script_nodes_list;
+	Map<String, VisualScriptCategoryDoc> visual_script_category_list;
+	Map<String, VisualScriptCategoryDoc>::Element *iterator_node_doc = nullptr;
+
 	List<DocData::MethodDoc> script_methods;
 
-	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
 	Map<String, ClassMatch> matches;
 	Map<String, ClassMatch>::Element *iterator_match = nullptr;
+	Map<String, CategoryMatch> category_matches;
+	Map<String, CategoryMatch>::Element * category_iterator_match = nullptr;
+
 	TreeItem *root_item = nullptr;
 	Map<String, TreeItem *> class_items;
+	Map<String, TreeItem *> category_items;
 	TreeItem *matched_item = nullptr;
 	float match_highest_score = 0;
 
@@ -186,9 +224,11 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	bool _is_term_consistent_with_method_name(const String &p_name);
 
 	bool _slice();
-	bool _phase_match_script_classes_init();
 	bool _phase_match_classes_init();
+	bool _phase_match_script_classes_init();
+	bool _phase_match_visual_script_nodes_init();
 	bool _phase_match_classes();
+	bool _phase_match_visual_script_nodes();
 	bool _phase_class_items_init();
 	bool _phase_class_items();
 	bool _phase_member_items_init();
@@ -207,6 +247,9 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	TreeItem *_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc);
 	TreeItem *_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc);
 	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip);
+	TreeItem *_create_node_hierarchy(const CategoryMatch &p_match);
+	TreeItem *_create_category_item(TreeItem *p_parent, const VisualScriptCategoryDoc *p_doc);
+	TreeItem *_create_node_item(TreeItem *p_parent, const VisualScriptNodeDoc *p_doc);
 
 public:
 	bool work(uint64_t slot = 100000);

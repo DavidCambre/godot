@@ -951,14 +951,20 @@ bool VisualScriptPropertySelector::Runner::_is_term_consistent_with_method_name(
 bool VisualScriptPropertySelector::Runner::_slice() {
 	bool phase_done = false;
 	switch (phase) {
-		case PHASE_MATCH_SCRIPT_CLASSES_INIT:
-			phase_done = _phase_match_script_classes_init();
-			break;
 		case PHASE_MATCH_CLASSES_INIT:
 			phase_done = _phase_match_classes_init();
 			break;
+		case PHASE_MATCH_SCRIPT_CLASSES_INIT:
+			phase_done = _phase_match_script_classes_init();
+			break;
+		case PHASE_MATCH_VISUAL_SCRIPT_NODES_INIT:
+			phase_done = _phase_match_visual_script_nodes_init();
+			break;
 		case PHASE_MATCH_CLASSES:
 			phase_done = _phase_match_classes();
+			break;
+		case PHASE_MATCH_VISUAL_SCRIPT_NODES:
+			phase_done = _phase_match_visual_script_nodes();
 			break;
 		case PHASE_CLASS_ITEMS_INIT:
 			phase_done = _phase_class_items_init();
@@ -988,6 +994,16 @@ bool VisualScriptPropertySelector::Runner::_slice() {
 	return false;
 }
 
+bool VisualScriptPropertySelector::Runner::_phase_match_classes_init() {
+	iterator_doc = EditorHelp::get_doc_data()->class_list.front();
+
+	matches.clear();
+	matched_item = nullptr;
+	match_highest_score = 0;
+
+	return true;
+}
+
 bool VisualScriptPropertySelector::Runner::_phase_match_script_classes_init() {
 	script_class_list = Map<String, DocData::ClassDoc>();
 
@@ -1003,12 +1019,26 @@ bool VisualScriptPropertySelector::Runner::_phase_match_script_classes_init() {
 	return true;
 }
 
-bool VisualScriptPropertySelector::Runner::_phase_match_classes_init() {
-	iterator_doc = EditorHelp::get_doc_data()->class_list.front();
+bool VisualScriptPropertySelector::Runner::_phase_match_visual_script_nodes_init() {
+	List<String> fnodes;
+	VisualScriptLanguage::singleton->get_registered_node_names(&fnodes);
+	visual_script_nodes_list = Map<String, VisualScriptNodeDoc>();
+	visual_script_category_list = Map<String, VisualScriptCategoryDoc>();
+	VisualScriptCategoryDoc vscd = VisualScriptCategoryDoc();
+	vscd.name = "all";
+	visual_script_category_list["all"] = vscd;
+	
+	category_matches.clear();
 
-	matches.clear();
-	matched_item = nullptr;
-	match_highest_score = 0;
+	for (const String &E : fnodes) {
+		VisualScriptNodeDoc vs_node_doc = VisualScriptNodeDoc();
+		vs_node_doc.name = E;
+		vs_node_doc.category = "all";
+		visual_script_nodes_list[E] = vs_node_doc;
+		visual_script_category_list["all"].visual_script_nodes.push_back(visual_script_nodes_list[vs_node_doc.name]);
+	}
+
+	iterator_node_doc =  visual_script_category_list.front();
 
 	return true;
 }
@@ -1114,6 +1144,55 @@ bool VisualScriptPropertySelector::Runner::_phase_match_classes() {
 	}
 
 	return !iterator_doc;
+}
+
+bool VisualScriptPropertySelector::Runner::_phase_match_visual_script_nodes()
+{
+	VisualScriptCategoryDoc &node_doc = iterator_node_doc->value();
+
+	if (true){ //  not is_vs_nodes_disabled()
+		print_error(node_doc.name);
+			
+		category_matches[node_doc.name] = CategoryMatch();
+		CategoryMatch &match = category_matches[node_doc.name];
+
+		match.doc = &node_doc;
+		
+		// Match category name.
+	//	if (search_flags & SEARCH_CLASSES) {
+	//		match.name = term == "" || _match_string(term, class_doc.name);
+	//	}
+
+		
+		if (true) { //search_flags & SEARCH_CONSTRUCTORS
+			for (int i = 0; i < node_doc.visual_script_nodes.size(); i++) {
+				String node_name = (search_flags & SEARCH_CASE_SENSITIVE) ? node_doc.visual_script_nodes[i].name : node_doc.visual_script_nodes[i].name.to_lower();
+				print_error(node_name);
+				if (true) {
+					//node_name.find(term) > -1 ||
+					//	(term.begins_with(".") && node_name.begins_with(term.substr(1))) ||
+					//	(term.ends_with("(") && node_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+					//	(term.begins_with(".") && term.ends_with("(") && node_name == term.substr(1, term.length() - 2).strip_edges())
+					match.visual_script_nodes.push_back(const_cast<VisualScriptNodeDoc *>(&node_doc.visual_script_nodes[i]));
+				}
+			}
+		}
+
+
+
+		//TreeItem *parent = root_item;
+
+		if (true){ // is _category disabled?
+			if (true){ // is__term_consistent_with_vs_node_name
+				// create tree item?
+
+			}
+		}
+	}
+
+	iterator_node_doc = iterator_node_doc->next();
+
+	return !iterator_node_doc;
 }
 
 bool VisualScriptPropertySelector::Runner::_phase_class_items_init() {
@@ -1353,6 +1432,60 @@ icon = ui_service->get_icon("Object", "EditorIcons");*/
 	item->set_metadata(0, "class_" + p_metatype + ":" + p_class_name + ":" + p_name);
 
 	_match_item(item, p_name);
+
+	return item;
+}
+
+TreeItem* VisualScriptPropertySelector::Runner::_create_node_hierarchy(const CategoryMatch& p_match)
+{
+	if (category_items.has(p_match.doc->name)) {
+		return category_items[p_match.doc->name];
+	}
+
+	// Ensure parent nodes are created first.
+	TreeItem *parent = root_item;
+	if (p_match.doc->inherits != "") {
+		if (category_items.has(p_match.doc->inherits)) {
+			parent = category_items[p_match.doc->inherits];
+		} else if (matches.find(p_match.doc->inherits)) {
+			CategoryMatch &base_match = category_matches[p_match.doc->inherits];
+			parent = _create_node_hierarchy(base_match);
+		}
+	}
+	
+	TreeItem *category_item = _create_category_item(parent, p_match.doc);
+	category_items[p_match.doc->name] = category_item;
+	return category_item;
+}
+
+TreeItem* VisualScriptPropertySelector::Runner::_create_category_item(TreeItem* p_parent, const VisualScriptCategoryDoc* p_doc)
+{
+	return nullptr;
+}
+
+TreeItem* VisualScriptPropertySelector::Runner::_create_node_item(TreeItem *p_parent, const VisualScriptNodeDoc *p_doc)
+{
+	Ref<Texture2D> icon = empty_icon; // get vs node icon
+	if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
+		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
+	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
+		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+	}
+	String tooltip = p_doc->brief_description.strip_edges();
+
+	TreeItem *item = results_tree->create_item(p_parent);
+	item->set_icon(0, icon);
+	item->set_text(0, p_doc->name);
+	item->set_text(1, TTR("VS_Node"));
+	item->set_tooltip(0, tooltip);
+	item->set_tooltip(1, tooltip);
+	item->set_metadata(0, "node_name:" + p_doc->name);
+//	if (p_gray) {
+//		item->set_custom_color(0, disabled_color);
+//		item->set_custom_color(1, disabled_color);
+//	}
+
+	_match_item(item, p_doc->name);
 
 	return item;
 }
