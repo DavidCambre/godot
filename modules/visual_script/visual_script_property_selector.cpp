@@ -857,8 +857,6 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 
 	results_tree = memnew(Tree);
 	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	results_tree->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
-	results_tree->connect("cell_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
 	results_tree->set_hide_root(true);
 	//	results_tree->set_hide_folding(true);
 	//	results_tree->set_columns(3);
@@ -869,8 +867,11 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	results_tree->set_column_expand(1, false);
 	results_tree->set_column_custom_minimum_width(1, 150 * EDSCALE);
 	results_tree->set_column_clip_content(1, true);
-	//	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
+	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
+	results_tree->set_select_mode(Tree::SELECT_ROW);
 	//	results_tree->set_column_expand(2, false);
+	results_tree->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
+	results_tree->connect("cell_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
 	vbox->add_margin_child(TTR("Matches:"), results_tree, true);
 
 	help_bit = memnew(EditorHelpBit);
