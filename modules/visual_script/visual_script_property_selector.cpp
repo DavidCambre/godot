@@ -1027,7 +1027,7 @@ bool VisualScriptPropertySelector::Runner::_phase_match_visual_script_nodes_init
 	VisualScriptCategoryDoc vscd = VisualScriptCategoryDoc();
 	vscd.name = "all";
 	visual_script_category_list["all"] = vscd;
-	
+
 	category_matches.clear();
 
 	for (const String &E : fnodes) {
@@ -1038,7 +1038,7 @@ bool VisualScriptPropertySelector::Runner::_phase_match_visual_script_nodes_init
 		visual_script_category_list["all"].visual_script_nodes.push_back(visual_script_nodes_list[vs_node_doc.name]);
 	}
 
-	iterator_node_doc =  visual_script_category_list.front();
+	iterator_node_doc = visual_script_category_list.front();
 
 	return true;
 }
@@ -1146,24 +1146,22 @@ bool VisualScriptPropertySelector::Runner::_phase_match_classes() {
 	return !iterator_doc;
 }
 
-bool VisualScriptPropertySelector::Runner::_phase_match_visual_script_nodes()
-{
+bool VisualScriptPropertySelector::Runner::_phase_match_visual_script_nodes() {
 	VisualScriptCategoryDoc &node_doc = iterator_node_doc->value();
 
-	if (true){ //  not is_vs_nodes_disabled()
+	if (true) { //  not is_vs_nodes_disabled()
 		print_error(node_doc.name);
-			
+
 		category_matches[node_doc.name] = CategoryMatch();
 		CategoryMatch &match = category_matches[node_doc.name];
 
 		match.doc = &node_doc;
-		
-		// Match category name.
-	//	if (search_flags & SEARCH_CLASSES) {
-	//		match.name = term == "" || _match_string(term, class_doc.name);
-	//	}
 
-		
+		// Match category name.
+		//	if (search_flags & SEARCH_CLASSES) {
+		//		match.name = term == "" || _match_string(term, class_doc.name);
+		//	}
+
 		if (true) { //search_flags & SEARCH_CONSTRUCTORS
 			for (int i = 0; i < node_doc.visual_script_nodes.size(); i++) {
 				String node_name = (search_flags & SEARCH_CASE_SENSITIVE) ? node_doc.visual_script_nodes[i].name : node_doc.visual_script_nodes[i].name.to_lower();
@@ -1178,14 +1176,11 @@ bool VisualScriptPropertySelector::Runner::_phase_match_visual_script_nodes()
 			}
 		}
 
-
-
 		//TreeItem *parent = root_item;
 
-		if (true){ // is _category disabled?
-			if (true){ // is__term_consistent_with_vs_node_name
+		if (true) { // is _category disabled?
+			if (true) { // is__term_consistent_with_vs_node_name
 				// create tree item?
-
 			}
 		}
 	}
@@ -1436,8 +1431,7 @@ icon = ui_service->get_icon("Object", "EditorIcons");*/
 	return item;
 }
 
-TreeItem* VisualScriptPropertySelector::Runner::_create_node_hierarchy(const CategoryMatch& p_match)
-{
+TreeItem *VisualScriptPropertySelector::Runner::_create_node_hierarchy(const CategoryMatch &p_match) {
 	if (category_items.has(p_match.doc->name)) {
 		return category_items[p_match.doc->name];
 	}
@@ -1452,19 +1446,17 @@ TreeItem* VisualScriptPropertySelector::Runner::_create_node_hierarchy(const Cat
 			parent = _create_node_hierarchy(base_match);
 		}
 	}
-	
+
 	TreeItem *category_item = _create_category_item(parent, p_match.doc);
 	category_items[p_match.doc->name] = category_item;
 	return category_item;
 }
 
-TreeItem* VisualScriptPropertySelector::Runner::_create_category_item(TreeItem* p_parent, const VisualScriptCategoryDoc* p_doc)
-{
+TreeItem *VisualScriptPropertySelector::Runner::_create_category_item(TreeItem *p_parent, const VisualScriptCategoryDoc *p_doc) {
 	return nullptr;
 }
 
-TreeItem* VisualScriptPropertySelector::Runner::_create_node_item(TreeItem *p_parent, const VisualScriptNodeDoc *p_doc)
-{
+TreeItem *VisualScriptPropertySelector::Runner::_create_node_item(TreeItem *p_parent, const VisualScriptNodeDoc *p_doc) {
 	Ref<Texture2D> icon = empty_icon; // get vs node icon
 	if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
 		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
@@ -1480,10 +1472,10 @@ TreeItem* VisualScriptPropertySelector::Runner::_create_node_item(TreeItem *p_pa
 	item->set_tooltip(0, tooltip);
 	item->set_tooltip(1, tooltip);
 	item->set_metadata(0, "node_name:" + p_doc->name);
-//	if (p_gray) {
-//		item->set_custom_color(0, disabled_color);
-//		item->set_custom_color(1, disabled_color);
-//	}
+	//	if (p_gray) {
+	//		item->set_custom_color(0, disabled_color);
+	//		item->set_custom_color(1, disabled_color);
+	//	}
 
 	_match_item(item, p_doc->name);
 

@@ -158,7 +158,7 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 			return name || methods.size() || signals.size() || constants.size() || properties.size() || theme_properties.size();
 		}
 	};
-	
+
 	struct VisualScriptNodeDoc {
 		String name;
 		String inherits;
@@ -169,7 +169,7 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 		String return_enum;
 		Vector<DocData::ArgumentDoc> arguments;
 	};
-	
+
 	struct VisualScriptCategoryDoc {
 		String name;
 		String inherits;
@@ -182,7 +182,7 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	};
 
 	struct CategoryMatch {
-		VisualScriptCategoryDoc * doc;
+		VisualScriptCategoryDoc *doc;
 		bool name = false;
 		Vector<VisualScriptNodeDoc *> visual_script_nodes;
 	};
@@ -210,7 +210,7 @@ class VisualScriptPropertySelector::Runner : public RefCounted {
 	Map<String, ClassMatch> matches;
 	Map<String, ClassMatch>::Element *iterator_match = nullptr;
 	Map<String, CategoryMatch> category_matches;
-	Map<String, CategoryMatch>::Element * category_iterator_match = nullptr;
+	//	Map<String, CategoryMatch>::Element * category_iterator_match = nullptr;
 
 	TreeItem *root_item = nullptr;
 	Map<String, TreeItem *> class_items;
