@@ -77,12 +77,21 @@ void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 	}
 }
 
-void VisualScriptPropertySelector::_update_search_i(int p_int) {
-	_update_search();
+void VisualScriptPropertySelector::_update_results_i(int p_int) {
+	_update_results();
 }
 
-void VisualScriptPropertySelector::_update_search_s(String p_string) {
-	_update_search();
+void VisualScriptPropertySelector::_update_results_s(String p_string) {
+	_update_results();
+}
+
+void VisualScriptPropertySelector::_update_results() {
+	//	node_runner = Ref<NodeRunner>(memnew(NodeRunner(vbox, &result_nodes)));
+	node_runner = Ref<NodeRunner>(memnew(NodeRunner(&result_nodes)));
+	set_process(true);
+	//// Get all nodes and atach them to there categorys
+	//List<String> fnodes;
+	//VisualScriptLanguage::singleton->get_registered_node_names(&fnodes);
 }
 
 void VisualScriptPropertySelector::_update_search() {
@@ -538,8 +547,30 @@ void VisualScriptPropertySelector::_hide_requested() {
 }
 
 void VisualScriptPropertySelector::_notification(int p_what) {
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connect("confirmed", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
+	switch (p_what) {
+		//case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+		//	_update_icons();
+		//} break;
+		case NOTIFICATION_ENTER_TREE: {
+			connect("confirmed", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
+			//_update_icons();
+		} break;
+		case NOTIFICATION_PROCESS: {
+			// Update background search.
+			if (node_runner.is_valid()) {
+				if (node_runner->work()) {
+					// Search done.
+					get_ok_button()->set_disabled(!results_tree->get_selected());
+
+					node_runner = Ref<NodeRunner>();
+					// if both works are done
+					set_process(false);
+				}
+			} else {
+				// if one is valid 
+				set_process(false);
+			}
+		} break;
 	}
 }
 
@@ -723,7 +754,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	search_box = memnew(LineEdit);
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	search_box->connect("text_changed", callable_mp(this, &VisualScriptPropertySelector::_update_search_s));
+	search_box->connect("text_changed", callable_mp(this, &VisualScriptPropertySelector::_update_results_s));
 	search_box->connect("gui_input", callable_mp(this, &VisualScriptPropertySelector::_sbox_input));
 	register_text_enter(search_box);
 	hbox->add_child(search_box);
@@ -731,7 +762,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	case_sensitive_button = memnew(Button);
 	//	case_sensitive_button->set_flat(true); comented until update icon is working
 	case_sensitive_button->set_tooltip(TTR("Case Sensitive"));
-	case_sensitive_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_search));
+	case_sensitive_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
 	case_sensitive_button->set_focus_mode(Control::FOCUS_NONE);
 	hbox->add_child(case_sensitive_button);
@@ -739,7 +770,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hierarchy_button = memnew(Button);
 	//	hierarchy_button->set_flat(true); comented until update icon is working
 	hierarchy_button->set_tooltip(TTR("Show Hierarchy"));
-	hierarchy_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_search));
+	hierarchy_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
 	hierarchy_button->set_toggle_mode(true);
 	hierarchy_button->set_pressed(true);
 	hierarchy_button->set_focus_mode(Control::FOCUS_NONE);
@@ -758,7 +789,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	filter_combo->add_item(TTR("Constants Only"), SEARCH_CONSTANTS);
 	filter_combo->add_item(TTR("Properties Only"), SEARCH_PROPERTIES);
 	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
-	filter_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_update_search_i));
+	filter_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_update_results_i));
 	hbox->add_child(filter_combo);
 
 	scope_combo = memnew(OptionButton);
@@ -769,7 +800,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	scope_combo->add_item(TTR("Search Base"), SCOPE_BASE);
 	scope_combo->add_item(TTR("Search Inheriters"), SCOPE_INHERITERS);
 	scope_combo->add_item(TTR("Search Unrelated"), SCOPE_UNRELATED);
-	scope_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_update_search_i));
+	scope_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_update_results_i));
 	hbox->add_child(scope_combo);
 
 	results_tree = memnew(Tree);
@@ -797,4 +828,158 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	get_ok_button()->set_text(TTR("Open"));
 	get_ok_button()->set_disabled(true);
 	set_hide_on_ok(false);
+}
+
+bool VisualScriptPropertySelector::NodeRunner::_slice() {
+	// Return true when fases are completed, otherwise false.
+	bool phase_done = false;
+	switch (phase) {
+		case PHASE_INIT_SEARCH:
+			phase_done = _phase_init_search();
+			break;
+		case PHASE_GET_ALL_FOLDER_PATHS:
+			phase_done = _phase_get_all_folder_paths();
+			break;
+		case PHASE_GET_ALL_FILE_PATHS:
+			phase_done = _phase_get_all_file_paths();
+			break;
+		case PHASE_MAX:
+			return true;
+		default:
+			WARN_PRINT("Invalid or unhandled phase in EditorHelpSearch::Runner, aborting search.");
+			return true;
+	};
+
+	if (phase_done) {
+		phase++;
+	}
+	return false;
+}
+
+bool VisualScriptPropertySelector::NodeRunner::_phase_init_search() {
+	result_nodes->clear();
+	_current_dir = "";
+	PackedStringArray init_folder;
+	init_folder.push_back("");
+	_folders_stack.clear();
+	_folders_stack.push_back(init_folder);
+	_initial_files_count = 0;
+	_extension_filter.clear();
+	_extension_filter.append("gd");
+	_extension_filter.append("vs");
+	return true;
+}
+
+bool VisualScriptPropertySelector::NodeRunner::_phase_get_all_folder_paths() {
+	if (_folders_stack.size() != 0) {
+		// Scan folders first so we can build a list of files and have progress info later.
+
+		PackedStringArray &folders_to_scan = _folders_stack.write[_folders_stack.size() - 1];
+
+		if (folders_to_scan.size() != 0) {
+			// Scan one folder below.
+
+			String folder_name = folders_to_scan[folders_to_scan.size() - 1];
+			folders_to_scan.resize(folders_to_scan.size() - 1); //pop_back(...);
+
+			_current_dir = _current_dir.plus_file(folder_name);
+
+			PackedStringArray sub_dirs;
+			_scan_dir("res://" + _current_dir, sub_dirs);
+
+			_folders_stack.push_back(sub_dirs);
+		} else {
+			// Go back one level.
+			_folders_stack.resize(_folders_stack.size() - 1); //pop_back(...);
+			_current_dir = _current_dir.get_base_dir();
+
+			if (_folders_stack.size() == 0) {
+				// All folders scanned.
+				_initial_files_count = _files_to_scan.size();
+			}
+		}
+		return false;
+	}
+	return true;
+}
+
+bool VisualScriptPropertySelector::NodeRunner::_phase_get_all_file_paths() {
+	if (_files_to_scan.size() != 0) {
+		String fpath = _files_to_scan[_files_to_scan.size() - 1];
+		_files_to_scan.resize(_files_to_scan.size() - 1); //pop_back(...);
+		_scan_file(fpath);
+		return false;
+	}
+	return true;
+}
+
+void VisualScriptPropertySelector::NodeRunner::_scan_dir(String path, PackedStringArray &out_folders) {
+	DirAccessRef dir = DirAccess::open(path);
+	if (!dir) {
+		print_verbose("Cannot open directory! " + path);
+		return;
+	}
+
+	dir->list_dir_begin();
+
+	for (int i = 0; i < 1000; ++i) {
+		String file = dir->get_next();
+
+		if (file == "") {
+			break;
+		}
+
+		// If there is a .gdignore file in the directory, skip searching the directory.
+		if (file == ".gdignore") {
+			break;
+		}
+
+		// Ignore special directories (such as those beginning with . and the project data directory).
+		String project_data_dir_name = ProjectSettings::get_singleton()->get_project_data_dir_name();
+		if (file.begins_with(".") || file == project_data_dir_name) {
+			continue;
+		}
+		if (dir->current_is_hidden()) {
+			continue;
+		}
+
+		if (dir->current_is_dir()) {
+			out_folders.push_back(file);
+
+		} else {
+			String file_ext = file.get_extension();
+			if (_extension_filter.has(file_ext)) {
+				_files_to_scan.push_back(path.plus_file(file));
+			}
+		}
+	}
+}
+
+void VisualScriptPropertySelector::NodeRunner::_scan_file(String fpath) {
+	Ref<Script> script;
+	script = ResourceLoader::load(fpath);
+
+	if (script->can_instantiate()) {
+		Ref<VisualScriptCustomNode> vs_c_node;
+		vs_c_node.instantiate();
+		vs_c_node->set_script(script);
+		if (vs_c_node.is_valid()) {
+			result_nodes->push_back(vs_c_node);
+		}
+	}
+}
+
+bool VisualScriptPropertySelector::NodeRunner::work(uint64_t slot) {
+	// Return true when the search has been completed, otherwise false.
+	const uint64_t until = OS::get_singleton()->get_ticks_usec() + slot;
+	while (!_slice()) {
+		if (OS::get_singleton()->get_ticks_usec() > until) {
+			return false;
+		}
+	}
+	return true;
+}
+
+VisualScriptPropertySelector::NodeRunner::NodeRunner(Vector<Ref<VisualScriptNode>> *p_result_nodes) :
+		result_nodes(p_result_nodes) {
 }

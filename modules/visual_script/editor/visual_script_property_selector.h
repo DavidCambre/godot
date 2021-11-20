@@ -31,13 +31,14 @@
 #ifndef VISUALSCRIPT_PROPERTYSELECTOR_H
 #define VISUALSCRIPT_PROPERTYSELECTOR_H
 
+#include "../visual_script.h"
 #include "editor/editor_help.h"
 #include "editor/property_editor.h"
 #include "scene/gui/rich_text_label.h"
 
 class VisualScriptPropertySelector : public ConfirmationDialog {
 	GDCLASS(VisualScriptPropertySelector, ConfirmationDialog);
-	
+
 	enum SearchFlags {
 		SEARCH_CLASSES = 1 << 0,
 		SEARCH_CONSTRUCTORS = 1 << 1,
@@ -69,9 +70,14 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	OptionButton *scope_combo;
 	Tree *results_tree;
 
+	class NodeRunner;
+	Ref<NodeRunner> node_runner;
+	Vector<Ref<VisualScriptNode>> result_nodes;
+
 	void _sbox_input(const Ref<InputEvent> &p_ie);
-	void _update_search_i(int p_int);
-	void _update_search_s(String p_string);
+	void _update_results_i(int p_int);
+	void _update_results_s(String p_string);
+	void _update_results();
 	void _update_search();
 
 	void create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text);
@@ -115,6 +121,40 @@ public:
 	void set_type_filter(const Vector<Variant::Type> &p_type_filter);
 
 	VisualScriptPropertySelector();
+};
+
+class VisualScriptPropertySelector::NodeRunner : public RefCounted {
+	enum Phase {
+		PHASE_INIT_SEARCH,
+		PHASE_GET_ALL_FOLDER_PATHS,
+		PHASE_GET_ALL_FILE_PATHS,
+		PHASE_MAX
+	};
+	int phase = 0;
+
+	Vector<Ref<VisualScriptNode>> *result_nodes;
+
+	// Config
+	Vector<String> _extension_filter;
+
+	// State
+	String _current_dir;
+	Vector<PackedStringArray> _folders_stack;
+	Vector<String> _files_to_scan;
+	int _initial_files_count = 0;
+
+	bool _slice();
+	bool _phase_init_search();
+	bool _phase_get_all_folder_paths();
+	bool _phase_get_all_file_paths();
+
+	void _scan_dir(String path, PackedStringArray &out_folders);
+	void _scan_file(String fpath);
+
+public:
+	bool work(uint64_t slot = 100000);
+
+	NodeRunner(Vector<Ref<VisualScriptNode>> *p_result_nodes);
 };
 
 #endif // VISUALSCRIPT_PROPERTYSELECTOR_H
