@@ -55,6 +55,10 @@ bool VisualScriptFunctionCall::has_input_sequence_port() const {
 #ifdef TOOLS_ENABLED
 
 static Node *_find_script_node(Node *p_edited_scene, Node *p_current_node, const Ref<Script> &script) {
+	//Ref<Script> script;
+	//script->get_instance_base_type
+	//script->
+	//	script->get_parent_class_static
 	if (p_edited_scene != p_current_node && p_current_node->get_owner() != p_edited_scene) {
 		return nullptr;
 	}

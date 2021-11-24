@@ -87,7 +87,7 @@ void VisualScriptPropertySelector::_update_results_s(String p_string) {
 
 void VisualScriptPropertySelector::_update_results() {
 	//	node_runner = Ref<NodeRunner>(memnew(NodeRunner(vbox, &result_nodes)));
-	node_runner = Ref<NodeRunner>(memnew(NodeRunner(&result_nodes)));
+	doc_runner = Ref<DocRunner>(memnew(DocRunner(&result_nodes, &result_class_list)));
 	set_process(true);
 	//// Get all nodes and atach them to there categorys
 	//List<String> fnodes;
@@ -557,17 +557,17 @@ void VisualScriptPropertySelector::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_PROCESS: {
 			// Update background search.
-			if (node_runner.is_valid()) {
-				if (node_runner->work()) {
+			if (doc_runner.is_valid()) {
+				if (doc_runner->work()) {
 					// Search done.
 					get_ok_button()->set_disabled(!results_tree->get_selected());
 
-					node_runner = Ref<NodeRunner>();
+					doc_runner = Ref<DocRunner>();
 					// if both works are done
 					set_process(false);
 				}
 			} else {
-				// if one is valid 
+				// if one is valid
 				set_process(false);
 			}
 		} break;
@@ -830,7 +830,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	set_hide_on_ok(false);
 }
 
-bool VisualScriptPropertySelector::NodeRunner::_slice() {
+bool VisualScriptPropertySelector::DocRunner::_slice() {
 	// Return true when fases are completed, otherwise false.
 	bool phase_done = false;
 	switch (phase) {
@@ -856,21 +856,28 @@ bool VisualScriptPropertySelector::NodeRunner::_slice() {
 	return false;
 }
 
-bool VisualScriptPropertySelector::NodeRunner::_phase_init_search() {
+bool VisualScriptPropertySelector::DocRunner::_phase_init_search() {
+	// Reset data
 	result_nodes->clear();
+	*result_class_list = EditorHelp::get_doc_data()->class_list;
+
+	// Config
+	_extension_filter.clear();
+	_extension_filter.append("gd");
+	_extension_filter.append("vs");
+
+	// State
 	_current_dir = "";
 	PackedStringArray init_folder;
 	init_folder.push_back("");
 	_folders_stack.clear();
 	_folders_stack.push_back(init_folder);
 	_initial_files_count = 0;
-	_extension_filter.clear();
-	_extension_filter.append("gd");
-	_extension_filter.append("vs");
+
 	return true;
 }
 
-bool VisualScriptPropertySelector::NodeRunner::_phase_get_all_folder_paths() {
+bool VisualScriptPropertySelector::DocRunner::_phase_get_all_folder_paths() {
 	if (_folders_stack.size() != 0) {
 		// Scan folders first so we can build a list of files and have progress info later.
 
@@ -903,7 +910,7 @@ bool VisualScriptPropertySelector::NodeRunner::_phase_get_all_folder_paths() {
 	return true;
 }
 
-bool VisualScriptPropertySelector::NodeRunner::_phase_get_all_file_paths() {
+bool VisualScriptPropertySelector::DocRunner::_phase_get_all_file_paths() {
 	if (_files_to_scan.size() != 0) {
 		String fpath = _files_to_scan[_files_to_scan.size() - 1];
 		_files_to_scan.resize(_files_to_scan.size() - 1); //pop_back(...);
@@ -913,7 +920,7 @@ bool VisualScriptPropertySelector::NodeRunner::_phase_get_all_file_paths() {
 	return true;
 }
 
-void VisualScriptPropertySelector::NodeRunner::_scan_dir(String path, PackedStringArray &out_folders) {
+void VisualScriptPropertySelector::DocRunner::_scan_dir(String path, PackedStringArray &out_folders) {
 	DirAccessRef dir = DirAccess::open(path);
 	if (!dir) {
 		print_verbose("Cannot open directory! " + path);
@@ -955,11 +962,19 @@ void VisualScriptPropertySelector::NodeRunner::_scan_dir(String path, PackedStri
 	}
 }
 
-void VisualScriptPropertySelector::NodeRunner::_scan_file(String fpath) {
+void VisualScriptPropertySelector::DocRunner::_scan_file(String fpath) {
 	Ref<Script> script;
 	script = ResourceLoader::load(fpath);
 
 	if (script->can_instantiate()) {
+		print_error(fpath);
+	//	print_error(script->get_class());
+	//	print_error(script->get_class_name());
+	//	print_error(script->get_parent_class_static());
+		print_error(script->get_instance_base_type());
+
+		//print_error(Object::cast_to<Script>(script)->get_class());
+
 		Ref<VisualScriptCustomNode> vs_c_node;
 		vs_c_node.instantiate();
 		vs_c_node->set_script(script);
@@ -969,7 +984,7 @@ void VisualScriptPropertySelector::NodeRunner::_scan_file(String fpath) {
 	}
 }
 
-bool VisualScriptPropertySelector::NodeRunner::work(uint64_t slot) {
+bool VisualScriptPropertySelector::DocRunner::work(uint64_t slot) {
 	// Return true when the search has been completed, otherwise false.
 	const uint64_t until = OS::get_singleton()->get_ticks_usec() + slot;
 	while (!_slice()) {
@@ -980,6 +995,7 @@ bool VisualScriptPropertySelector::NodeRunner::work(uint64_t slot) {
 	return true;
 }
 
-VisualScriptPropertySelector::NodeRunner::NodeRunner(Vector<Ref<VisualScriptNode>> *p_result_nodes) :
-		result_nodes(p_result_nodes) {
+VisualScriptPropertySelector::DocRunner::DocRunner(Vector<Ref<VisualScriptNode>> *p_result_nodes, Map<String, DocData::ClassDoc> *p_result_class_list) :
+		result_nodes(p_result_nodes),
+		result_class_list(p_result_class_list) {
 }

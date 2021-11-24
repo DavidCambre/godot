@@ -70,9 +70,11 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	OptionButton *scope_combo;
 	Tree *results_tree;
 
-	class NodeRunner;
-	Ref<NodeRunner> node_runner;
+	class DocRunner;
+	Ref<DocRunner> doc_runner;
 	Vector<Ref<VisualScriptNode>> result_nodes;
+//	Vector<Ref<Script>> result_scripts;
+	Map<String, DocData::ClassDoc> result_class_list;
 
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _update_results_i(int p_int);
@@ -123,7 +125,7 @@ public:
 	VisualScriptPropertySelector();
 };
 
-class VisualScriptPropertySelector::NodeRunner : public RefCounted {
+class VisualScriptPropertySelector::DocRunner : public RefCounted {
 	enum Phase {
 		PHASE_INIT_SEARCH,
 		PHASE_GET_ALL_FOLDER_PATHS,
@@ -133,6 +135,8 @@ class VisualScriptPropertySelector::NodeRunner : public RefCounted {
 	int phase = 0;
 
 	Vector<Ref<VisualScriptNode>> *result_nodes;
+	//Vector<Ref<Script>> *result_scripts;
+	Map<String, DocData::ClassDoc> *result_class_list;
 
 	// Config
 	Vector<String> _extension_filter;
@@ -154,7 +158,7 @@ class VisualScriptPropertySelector::NodeRunner : public RefCounted {
 public:
 	bool work(uint64_t slot = 100000);
 
-	NodeRunner(Vector<Ref<VisualScriptNode>> *p_result_nodes);
+	DocRunner(Vector<Ref<VisualScriptNode>> *p_result_nodes, Map<String, DocData::ClassDoc> *p_result_class_list);
 };
 
 #endif // VISUALSCRIPT_PROPERTYSELECTOR_H
