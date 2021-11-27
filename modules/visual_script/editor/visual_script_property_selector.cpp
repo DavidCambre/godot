@@ -966,22 +966,59 @@ void VisualScriptPropertySelector::DocRunner::_scan_file(String fpath) {
 	Ref<Script> script;
 	script = ResourceLoader::load(fpath);
 
-	if (script->can_instantiate()) {
-		print_error(fpath);
-	//	print_error(script->get_class());
-	//	print_error(script->get_class_name());
-	//	print_error(script->get_parent_class_static());
-		print_error(script->get_instance_base_type());
-
-		//print_error(Object::cast_to<Script>(script)->get_class());
+	if (script->get_instance_base_type() == "VisualScriptCustomNode") {
 
 		Ref<VisualScriptCustomNode> vs_c_node;
 		vs_c_node.instantiate();
 		vs_c_node->set_script(script);
-		if (vs_c_node.is_valid()) {
-			result_nodes->push_back(vs_c_node);
+		result_nodes->push_back(vs_c_node);
+		print_error(itos(vs_c_node->has_input_sequence_port()));
+		return;
+	}
+	DocData::ClassDoc class_doc = DocData::ClassDoc();
+	class_doc.name = fpath;
+	class_doc.inherits = script->get_instance_base_type();
+	class_doc.brief_description = "a project script (brief_description)";
+	class_doc.description = "a project script (long_description)";
+
+	Object *obj = ObjectDB::get_instance(script->get_instance_id());
+	if (Object::cast_to<Script>(obj)) {
+		List<MethodInfo> methods;
+		Object::cast_to<Script>(obj)->get_script_method_list(&methods);
+		for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
+			class_doc.methods.push_back(_get_method_doc(M->get()));
+		}
+
+		List<MethodInfo> signals;
+		Object::cast_to<Script>(obj)->get_script_signal_list(&signals);
+		for (List<MethodInfo>::Element *S = signals.front(); S; S = S->next()) {
+			class_doc.signals.push_back(_get_method_doc(S->get()));
+		}
+
+		List<PropertyInfo> propertys;
+		Object::cast_to<Script>(obj)->get_script_property_list(&propertys);
+		for (List<PropertyInfo>::Element *P = propertys.front(); P; P = P->next()) {
+			DocData::PropertyDoc pd = DocData::PropertyDoc();
+			pd.name = P->get().name;
+			pd.type = Variant::get_type_name(P->get().type);
+			class_doc.properties.push_back(pd);
 		}
 	}
+	result_class_list->insert(class_doc.name, class_doc);
+}
+
+DocData::MethodDoc VisualScriptPropertySelector::DocRunner::_get_method_doc(MethodInfo method_info) {
+	DocData::MethodDoc method_doc = DocData::MethodDoc();
+	method_doc.name = method_info.name;
+	method_doc.return_type = Variant::get_type_name(method_info.return_val.type);
+	method_doc.description = "No description available";
+	for (List<PropertyInfo>::Element *P = method_info.arguments.front(); P; P = P->next()) {
+		DocData::ArgumentDoc argument_doc = DocData::ArgumentDoc();
+		argument_doc.name = P->get().name;
+		argument_doc.type = Variant::get_type_name(P->get().type);
+		method_doc.arguments.push_back(argument_doc);
+	}
+	return method_doc;
 }
 
 bool VisualScriptPropertySelector::DocRunner::work(uint64_t slot) {

@@ -73,7 +73,6 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	class DocRunner;
 	Ref<DocRunner> doc_runner;
 	Vector<Ref<VisualScriptNode>> result_nodes;
-//	Vector<Ref<Script>> result_scripts;
 	Map<String, DocData::ClassDoc> result_class_list;
 
 	void _sbox_input(const Ref<InputEvent> &p_ie);
@@ -154,6 +153,7 @@ class VisualScriptPropertySelector::DocRunner : public RefCounted {
 
 	void _scan_dir(String path, PackedStringArray &out_folders);
 	void _scan_file(String fpath);
+	DocData::MethodDoc _get_method_doc(MethodInfo method_info);
 
 public:
 	bool work(uint64_t slot = 100000);
