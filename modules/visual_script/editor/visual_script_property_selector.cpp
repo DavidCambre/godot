@@ -837,6 +837,9 @@ bool VisualScriptPropertySelector::DocRunner::_slice() {
 		case PHASE_INIT_SEARCH:
 			phase_done = _phase_init_search();
 			break;
+		case PHASE_GET_ALL_NODE_CLASS_DOCS:
+			phase_done = _phase_get_all_node_class_docs();
+			break;
 		case PHASE_GET_ALL_FOLDER_PATHS:
 			phase_done = _phase_get_all_folder_paths();
 			break;
@@ -860,6 +863,13 @@ bool VisualScriptPropertySelector::DocRunner::_phase_init_search() {
 	// Reset data
 	result_nodes->clear();
 	*result_class_list = EditorHelp::get_doc_data()->class_list;
+	VisualScriptLanguage::singleton->get_registered_node_names(&visual_script_nodes);
+
+	DocData::ClassDoc vs_docs = DocData::ClassDoc();
+	vs_docs.name = "VisualScriptNodes";
+	vs_docs.brief_description = "VisualScriptNodes";
+	vs_docs.description = "VisualScriptNodes";
+	result_class_list->insert(vs_docs.name, vs_docs);
 
 	// Config
 	_extension_filter.clear();
@@ -873,6 +883,50 @@ bool VisualScriptPropertySelector::DocRunner::_phase_init_search() {
 	_folders_stack.clear();
 	_folders_stack.push_back(init_folder);
 	_initial_files_count = 0;
+
+	return true;
+}
+bool VisualScriptPropertySelector::DocRunner::_phase_get_all_node_class_docs() {
+	if (visual_script_nodes.size() != 0) {
+		String node_name = visual_script_nodes[visual_script_nodes.size() - 1];
+		visual_script_nodes.pop_back();
+
+		DocData::MethodDoc method_doc = DocData::MethodDoc();
+
+		if (node_name.find("operators/") == 0) {
+			node_name = node_name.lstrip("operators/");
+			Vector<String> path = node_name.split("/");
+			for (size_t i = 0; i < path.size(); i++) {
+				if (i != 0) {
+					method_doc.name += " ";
+				}
+				method_doc.name += path[i];
+			}
+			result_class_list->find("VisualScriptNodes")->get().operators.push_back(method_doc);
+			return false;
+		}
+		if (node_name.find("functions/by_type/Vector3i") == 0) {
+
+			//print_error(node_name);
+			/* code */
+			return false;
+		}
+
+		//	create_visualscript_item(String("VisualScriptCondition"), root, text, String("Condition"));
+		//	create_visualscript_item(String("VisualScriptSwitch"), root, text, String("Switch"));
+		//	create_visualscript_item(String("VisualScriptSequence"), root, text, String("Sequence"));
+		//	create_visualscript_item(String("VisualScriptIterator"), root, text, String("Iterator"));
+		//	create_visualscript_item(String("VisualScriptWhile"), root, text, String("While"));
+		//	create_visualscript_item(String("VisualScriptReturn"), root, text, String("Return"));
+		//	get_visual_node_names("flow_control/type_cast", Set<String>(), found, root, search_box);
+		//	get_visual_node_names("functions/built_in/print", Set<String>(), found, root, search_box);
+
+		//	print_error(itos(node_name.get_base_dir().find("operators/")));
+		//	print_error(node_name.get_base_dir());
+		//	print_error(node_name);
+
+		return false;
+	}
 
 	return true;
 }
@@ -967,12 +1021,11 @@ void VisualScriptPropertySelector::DocRunner::_scan_file(String fpath) {
 	script = ResourceLoader::load(fpath);
 
 	if (script->get_instance_base_type() == "VisualScriptCustomNode") {
-
 		Ref<VisualScriptCustomNode> vs_c_node;
 		vs_c_node.instantiate();
 		vs_c_node->set_script(script);
 		result_nodes->push_back(vs_c_node);
-		print_error(itos(vs_c_node->has_input_sequence_port()));
+		//print_error(itos(vs_c_node->has_input_sequence_port()));
 		return;
 	}
 	DocData::ClassDoc class_doc = DocData::ClassDoc();

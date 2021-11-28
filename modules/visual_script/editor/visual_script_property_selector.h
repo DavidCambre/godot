@@ -127,6 +127,7 @@ public:
 class VisualScriptPropertySelector::DocRunner : public RefCounted {
 	enum Phase {
 		PHASE_INIT_SEARCH,
+		PHASE_GET_ALL_NODE_CLASS_DOCS,
 		PHASE_GET_ALL_FOLDER_PATHS,
 		PHASE_GET_ALL_FILE_PATHS,
 		PHASE_MAX
@@ -136,6 +137,7 @@ class VisualScriptPropertySelector::DocRunner : public RefCounted {
 	Vector<Ref<VisualScriptNode>> *result_nodes;
 	//Vector<Ref<Script>> *result_scripts;
 	Map<String, DocData::ClassDoc> *result_class_list;
+	List<String> visual_script_nodes;
 
 	// Config
 	Vector<String> _extension_filter;
@@ -148,6 +150,7 @@ class VisualScriptPropertySelector::DocRunner : public RefCounted {
 
 	bool _slice();
 	bool _phase_init_search();
+	bool _phase_get_all_node_class_docs();
 	bool _phase_get_all_folder_paths();
 	bool _phase_get_all_file_paths();
 
