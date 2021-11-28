@@ -193,9 +193,9 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 		}
 	};
 
+	VisualScriptPropertySelector *selector_ui;
 	Control *ui_service;
 	Tree *results_tree;
-	VisualScriptPropertySelector *selector_ui;
 	String term;
 	int search_flags;
 
