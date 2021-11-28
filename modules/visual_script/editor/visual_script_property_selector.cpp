@@ -1434,8 +1434,8 @@ bool VisualScriptPropertySelector::SearchRunner::work(uint64_t slot) {
 }
 
 VisualScriptPropertySelector::SearchRunner::SearchRunner(VisualScriptPropertySelector *p_selector_ui, Tree *p_results_tree, Map<String, DocData::ClassDoc> *p_class_docs) :
-		selector_ui(p_selector_ui),
 		results_tree(p_results_tree),
+		selector_ui(p_selector_ui),
 		term(p_selector_ui->search_box->get_text()),
 		ui_service(p_selector_ui->vbox),
 		class_docs(p_class_docs) {
