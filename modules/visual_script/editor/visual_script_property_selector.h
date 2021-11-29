@@ -78,6 +78,8 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	class SearchRunner;
 	Ref<SearchRunner> search_runner;
 
+	void _update_icons();
+	
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _update_results_i(int p_int);
 	void _update_results_s(String p_string);

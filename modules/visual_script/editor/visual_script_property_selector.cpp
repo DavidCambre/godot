@@ -43,6 +43,18 @@
 #include "scene/main/node.h"
 #include "scene/main/window.h"
 
+void VisualScriptPropertySelector::_update_icons() {
+	search_box->set_right_icon(results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	search_box->set_clear_button_enabled(true);
+	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	case_sensitive_button->set_icon(results_tree->get_theme_icon(SNAME("MatchCase"), SNAME("EditorIcons")));
+	hierarchy_button->set_icon(results_tree->get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
+
+	if (is_visible()) {
+		_update_results();
+	}
+}
+
 void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 	Ref<InputEventKey> k = p_ie;
 
@@ -550,12 +562,12 @@ void VisualScriptPropertySelector::_hide_requested() {
 
 void VisualScriptPropertySelector::_notification(int p_what) {
 	switch (p_what) {
-		//case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-		//	_update_icons();
-		//} break;
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			_update_icons();
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
-			//_update_icons();
+			_update_icons();
 		} break;
 		case NOTIFICATION_PROCESS: {
 			// Update background search.
