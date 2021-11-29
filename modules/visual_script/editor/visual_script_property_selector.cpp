@@ -49,10 +49,6 @@ void VisualScriptPropertySelector::_update_icons() {
 	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	case_sensitive_button->set_icon(results_tree->get_theme_icon(SNAME("MatchCase"), SNAME("EditorIcons")));
 	hierarchy_button->set_icon(results_tree->get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
-
-	if (is_visible()) {
-		_update_results();
-	}
 }
 
 void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
@@ -98,13 +94,10 @@ void VisualScriptPropertySelector::_update_results_s(String p_string) {
 }
 
 void VisualScriptPropertySelector::_update_results() {
-	//	node_runner = Ref<NodeRunner>(memnew(NodeRunner(vbox, &result_nodes)));
+	_update_icons();
 	doc_runner = Ref<DocRunner>(memnew(DocRunner(&result_nodes, &result_class_list)));
 	search_runner = Ref<SearchRunner>(memnew(SearchRunner(this, results_tree, &result_class_list)));
 	set_process(true);
-	//// Get all nodes and atach them to there categorys
-	//List<String> fnodes;
-	//VisualScriptLanguage::singleton->get_registered_node_names(&fnodes);
 }
 
 void VisualScriptPropertySelector::_update_search() {
@@ -567,7 +560,6 @@ void VisualScriptPropertySelector::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
-			_update_icons();
 		} break;
 		case NOTIFICATION_PROCESS: {
 			// Update background search.
@@ -1450,5 +1442,6 @@ VisualScriptPropertySelector::SearchRunner::SearchRunner(VisualScriptPropertySel
 		ui_service(p_selector_ui->vbox),
 		results_tree(p_results_tree),
 		term(p_selector_ui->search_box->get_text()),
+		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))),
 		class_docs(p_class_docs) {
 }
