@@ -101,7 +101,6 @@ void VisualScriptPropertySelector::_update_results() {
 }
 
 void VisualScriptPropertySelector::_update_search() {
-	//	return;
 	set_title(TTR("Search VisualScript"));
 
 	results_tree->clear();
@@ -970,45 +969,50 @@ void VisualScriptPropertySelector::DocRunner::_scan_dir(String path, PackedStrin
 
 void VisualScriptPropertySelector::DocRunner::_scan_file(String fpath) {
 	Ref<Script> script;
+
 	script = ResourceLoader::load(fpath);
+	if (script != nullptr) {
+		DocData::ClassDoc class_doc = DocData::ClassDoc();
+		class_doc.name = fpath;
 
-	if (script->get_instance_base_type() == "VisualScriptCustomNode") {
-		Ref<VisualScriptCustomNode> vs_c_node;
-		vs_c_node.instantiate();
-		vs_c_node->set_script(script);
-		result_nodes->push_back(vs_c_node);
-		return;
+		class_doc.inherits = script->get_instance_base_type();
+		class_doc.brief_description = "a project script (brief_description)";
+		class_doc.description = "a project script (long_description)";
+
+		Object *obj = ObjectDB::get_instance(script->get_instance_id());
+		if (Object::cast_to<Script>(obj)) {
+			List<MethodInfo> methods;
+			Object::cast_to<Script>(obj)->get_script_method_list(&methods);
+			for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
+				class_doc.methods.push_back(_get_method_doc(M->get()));
+			}
+
+			List<MethodInfo> signals;
+			Object::cast_to<Script>(obj)->get_script_signal_list(&signals);
+			for (List<MethodInfo>::Element *S = signals.front(); S; S = S->next()) {
+				class_doc.signals.push_back(_get_method_doc(S->get()));
+			}
+
+			List<PropertyInfo> propertys;
+			Object::cast_to<Script>(obj)->get_script_property_list(&propertys);
+			for (List<PropertyInfo>::Element *P = propertys.front(); P; P = P->next()) {
+				DocData::PropertyDoc pd = DocData::PropertyDoc();
+				pd.name = P->get().name;
+				pd.type = Variant::get_type_name(P->get().type);
+				class_doc.properties.push_back(pd);
+			}
+		}
+		result_class_list->insert(class_doc.name, class_doc);
 	}
-	DocData::ClassDoc class_doc = DocData::ClassDoc();
-	class_doc.name = fpath;
-	class_doc.inherits = script->get_instance_base_type();
-	class_doc.brief_description = "a project script (brief_description)";
-	class_doc.description = "a project script (long_description)";
 
-	Object *obj = ObjectDB::get_instance(script->get_instance_id());
-	if (Object::cast_to<Script>(obj)) {
-		List<MethodInfo> methods;
-		Object::cast_to<Script>(obj)->get_script_method_list(&methods);
-		for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
-			class_doc.methods.push_back(_get_method_doc(M->get()));
-		}
-
-		List<MethodInfo> signals;
-		Object::cast_to<Script>(obj)->get_script_signal_list(&signals);
-		for (List<MethodInfo>::Element *S = signals.front(); S; S = S->next()) {
-			class_doc.signals.push_back(_get_method_doc(S->get()));
-		}
-
-		List<PropertyInfo> propertys;
-		Object::cast_to<Script>(obj)->get_script_property_list(&propertys);
-		for (List<PropertyInfo>::Element *P = propertys.front(); P; P = P->next()) {
-			DocData::PropertyDoc pd = DocData::PropertyDoc();
-			pd.name = P->get().name;
-			pd.type = Variant::get_type_name(P->get().type);
-			class_doc.properties.push_back(pd);
-		}
-	}
-	result_class_list->insert(class_doc.name, class_doc);
+	// Het verschil moet verwerkt worden in de search runner wnat deze kan de tree items aanmaken
+	//	if (script->get_instance_base_type() == "VisualScriptCustomNode") {
+	//		Ref<VisualScriptCustomNode> vs_c_node;
+	//		vs_c_node.instantiate();
+	//		vs_c_node->set_script(script);
+	//		result_nodes->push_back(vs_c_node);
+	//		return;
+	//	}
 }
 
 DocData::MethodDoc VisualScriptPropertySelector::DocRunner::_get_method_doc(MethodInfo method_info) {
@@ -1324,7 +1328,25 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_hierarchy(co
 
 TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
 	Ref<Texture2D> icon = empty_icon;
-	if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
+	String name = p_doc->name;
+	if (p_doc->name.get_extension() != "") {
+		Ref<Script> script;
+		script = ResourceLoader::load(p_doc->name);
+		if (script != nullptr) {
+			if (script->get_instance_base_type() == "VisualScriptCustomNode") {
+				icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
+			} else if (ui_service->has_theme_icon(script->get_instance_base_type(), "EditorIcons")) {
+				icon = ui_service->get_theme_icon(script->get_instance_base_type(), "EditorIcons");
+			}
+			name = name.get_file();
+			name = name.rstrip("." + name.get_extension());
+		} else {
+			icon = ui_service->get_theme_icon("Error", "EditorIcons");
+			name = name.get_file();
+			name = "Faild to load " + name;
+		}
+
+	} else if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
 		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
 	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
 		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
@@ -1333,11 +1355,11 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeIte
 
 	TreeItem *item = results_tree->create_item(p_parent);
 	item->set_icon(0, icon);
-	item->set_text(0, p_doc->name);
+	item->set_text(0, name);
 	item->set_text(1, TTR("Class"));
 	item->set_tooltip(0, tooltip);
 	item->set_tooltip(1, tooltip);
-	item->set_metadata(0, "class_name:" + p_doc->name);
+	item->set_metadata(0, "class_name:" + name);
 	if (p_gray) {
 		item->set_custom_color(0, disabled_color);
 		item->set_custom_color(1, disabled_color);
