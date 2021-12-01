@@ -892,10 +892,7 @@ bool VisualScriptPropertySelector::SearchRunner::_slice() {
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
-	//iterator_doc = class_docs->front();
 	iterator_doc = EditorHelp::get_doc_data()->class_list.front();
-	print_error("------------------");
-	print_error(iterator_doc->get().name);
 	matches.clear();
 	matched_item = nullptr;
 	match_highest_score = 0;
@@ -1007,7 +1004,11 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_class_items_init() {
 bool VisualScriptPropertySelector::SearchRunner::_phase_class_items() {
 	ClassMatch &match = iterator_match->value();
 
-	if (search_flags & SEARCH_SHOW_HIERARCHY) {
+	if (match.doc->inherits == "VisualScriptCustomNode") {
+		// doc needs to rerouted to the VS_nodes System.
+		//icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
+		//p_doc->name = p_doc->name.get_file().trim_suffix("." + p_doc->name.get_extension());
+	} else if (search_flags & SEARCH_SHOW_HIERARCHY) {
 		if (match.required()) {
 			_create_class_hierarchy(match);
 		}
@@ -1112,7 +1113,6 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_hierarchy(co
 		}
 	}
 
-	//		print_error(p_match.doc->name);
 	TreeItem *class_item = _create_class_item(parent, p_match.doc, !p_match.name);
 	class_items[p_match.doc->name] = class_item;
 	return class_item;
@@ -1121,22 +1121,11 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_hierarchy(co
 TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
 	Ref<Texture2D> icon = empty_icon;
 	String name = p_doc->name;
-	//	print_error(p_doc->name);
-	if (p_doc->name.get_extension() != "") {
-		Ref<Script> script;
-		script = ResourceLoader::load(p_doc->name);
-		if (script != nullptr) {
-			if (script->get_instance_base_type() == "VisualScriptCustomNode") {
-				icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
-			} else if (ui_service->has_theme_icon(script->get_instance_base_type(), "EditorIcons")) {
-				icon = ui_service->get_theme_icon(script->get_instance_base_type(), "EditorIcons");
-			}
-			name = name.get_file();
-			name = name.rstrip("." + name.get_extension());
-		} else {
-			icon = ui_service->get_theme_icon("Error", "EditorIcons");
-			name = name.get_file();
-			name = "Faild to load " + name;
+
+	if (p_doc->name.is_quoted()) {
+		name = p_doc->name.unquote().get_file();
+		if (ui_service->has_theme_icon(p_doc->inherits, "EditorIcons")) {
+			icon = ui_service->get_theme_icon(p_doc->inherits, "EditorIcons");
 		}
 	} else if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
 		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
