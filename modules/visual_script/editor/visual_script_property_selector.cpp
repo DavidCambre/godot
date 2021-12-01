@@ -95,8 +95,7 @@ void VisualScriptPropertySelector::_update_results_s(String p_string) {
 
 void VisualScriptPropertySelector::_update_results() {
 	_update_icons();
-	doc_runner = Ref<DocRunner>(memnew(DocRunner(&result_nodes, &result_class_list)));
-	search_runner = Ref<SearchRunner>(memnew(SearchRunner(this, results_tree, &result_class_list)));
+	search_runner = Ref<SearchRunner>(memnew(SearchRunner(this, results_tree)));
 	set_process(true);
 }
 
@@ -562,12 +561,11 @@ void VisualScriptPropertySelector::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_PROCESS: {
 			// Update background search.
-			if (doc_runner.is_valid() || search_runner.is_valid()) {
-				if (doc_runner->work() && search_runner->work()) {
+			if (search_runner.is_valid()) {
+				if (search_runner->work()) {
 					// Search done.
 					get_ok_button()->set_disabled(!results_tree->get_selected());
 
-					doc_runner = Ref<DocRunner>();
 					search_runner = Ref<SearchRunner>();
 					set_process(false);
 				}
@@ -835,216 +833,6 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	set_hide_on_ok(false);
 }
 
-bool VisualScriptPropertySelector::DocRunner::_slice() {
-	// Return true when fases are completed, otherwise false.
-	bool phase_done = false;
-	switch (phase) {
-		case PHASE_INIT_SEARCH:
-			phase_done = _phase_init_search();
-			break;
-		case PHASE_GET_ALL_FOLDER_PATHS:
-			phase_done = _phase_get_all_folder_paths();
-			break;
-		case PHASE_GET_ALL_FILE_PATHS:
-			phase_done = _phase_get_all_file_paths();
-			break;
-		case PHASE_MAX:
-			return true;
-		default:
-			WARN_PRINT("Invalid or unhandled phase in EditorHelpSearch::Runner, aborting search.");
-			return true;
-	};
-
-	if (phase_done) {
-		phase++;
-	}
-	return false;
-}
-
-bool VisualScriptPropertySelector::DocRunner::_phase_init_search() {
-	// Reset data
-	result_nodes->clear();
-	*result_class_list = EditorHelp::get_doc_data()->class_list;
-
-	// Config
-	_extension_filter.clear();
-	_extension_filter.append("gd");
-	_extension_filter.append("vs");
-
-	// State
-	_current_dir = "";
-	PackedStringArray init_folder;
-	init_folder.push_back("");
-	_folders_stack.clear();
-	_folders_stack.push_back(init_folder);
-	_initial_files_count = 0;
-
-	return true;
-}
-
-bool VisualScriptPropertySelector::DocRunner::_phase_get_all_folder_paths() {
-	if (_folders_stack.size() != 0) {
-		// Scan folders first so we can build a list of files and have progress info later.
-
-		PackedStringArray &folders_to_scan = _folders_stack.write[_folders_stack.size() - 1];
-
-		if (folders_to_scan.size() != 0) {
-			// Scan one folder below.
-
-			String folder_name = folders_to_scan[folders_to_scan.size() - 1];
-			folders_to_scan.resize(folders_to_scan.size() - 1); //pop_back(...);
-
-			_current_dir = _current_dir.plus_file(folder_name);
-
-			PackedStringArray sub_dirs;
-			_scan_dir("res://" + _current_dir, sub_dirs);
-
-			_folders_stack.push_back(sub_dirs);
-		} else {
-			// Go back one level.
-			_folders_stack.resize(_folders_stack.size() - 1); //pop_back(...);
-			_current_dir = _current_dir.get_base_dir();
-
-			if (_folders_stack.size() == 0) {
-				// All folders scanned.
-				_initial_files_count = _files_to_scan.size();
-			}
-		}
-		return false;
-	}
-	return true;
-}
-
-bool VisualScriptPropertySelector::DocRunner::_phase_get_all_file_paths() {
-	if (_files_to_scan.size() != 0) {
-		String fpath = _files_to_scan[_files_to_scan.size() - 1];
-		_files_to_scan.resize(_files_to_scan.size() - 1); //pop_back(...);
-		_scan_file(fpath);
-		return false;
-	}
-	return true;
-}
-
-void VisualScriptPropertySelector::DocRunner::_scan_dir(String path, PackedStringArray &out_folders) {
-	DirAccessRef dir = DirAccess::open(path);
-	if (!dir) {
-		print_verbose("Cannot open directory! " + path);
-		return;
-	}
-
-	dir->list_dir_begin();
-
-	for (int i = 0; i < 1000; ++i) {
-		String file = dir->get_next();
-
-		if (file == "") {
-			break;
-		}
-
-		// If there is a .gdignore file in the directory, skip searching the directory.
-		if (file == ".gdignore") {
-			break;
-		}
-
-		// Ignore special directories (such as those beginning with . and the project data directory).
-		String project_data_dir_name = ProjectSettings::get_singleton()->get_project_data_dir_name();
-		if (file.begins_with(".") || file == project_data_dir_name) {
-			continue;
-		}
-		if (dir->current_is_hidden()) {
-			continue;
-		}
-
-		if (dir->current_is_dir()) {
-			out_folders.push_back(file);
-
-		} else {
-			String file_ext = file.get_extension();
-			if (_extension_filter.has(file_ext)) {
-				_files_to_scan.push_back(path.plus_file(file));
-			}
-		}
-	}
-}
-
-void VisualScriptPropertySelector::DocRunner::_scan_file(String fpath) {
-	Ref<Script> script;
-
-	script = ResourceLoader::load(fpath);
-	if (script != nullptr) {
-		DocData::ClassDoc class_doc = DocData::ClassDoc();
-		class_doc.name = fpath;
-
-		class_doc.inherits = script->get_instance_base_type();
-		class_doc.brief_description = "a project script (brief_description)";
-		class_doc.description = "a project script (long_description)";
-
-		Object *obj = ObjectDB::get_instance(script->get_instance_id());
-		if (Object::cast_to<Script>(obj)) {
-			List<MethodInfo> methods;
-			Object::cast_to<Script>(obj)->get_script_method_list(&methods);
-			for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
-				class_doc.methods.push_back(_get_method_doc(M->get()));
-			}
-
-			List<MethodInfo> signals;
-			Object::cast_to<Script>(obj)->get_script_signal_list(&signals);
-			for (List<MethodInfo>::Element *S = signals.front(); S; S = S->next()) {
-				class_doc.signals.push_back(_get_method_doc(S->get()));
-			}
-
-			List<PropertyInfo> propertys;
-			Object::cast_to<Script>(obj)->get_script_property_list(&propertys);
-			for (List<PropertyInfo>::Element *P = propertys.front(); P; P = P->next()) {
-				DocData::PropertyDoc pd = DocData::PropertyDoc();
-				pd.name = P->get().name;
-				pd.type = Variant::get_type_name(P->get().type);
-				class_doc.properties.push_back(pd);
-			}
-		}
-		result_class_list->insert(class_doc.name, class_doc);
-	}
-
-	// Het verschil moet verwerkt worden in de search runner wnat deze kan de tree items aanmaken
-	//	if (script->get_instance_base_type() == "VisualScriptCustomNode") {
-	//		Ref<VisualScriptCustomNode> vs_c_node;
-	//		vs_c_node.instantiate();
-	//		vs_c_node->set_script(script);
-	//		result_nodes->push_back(vs_c_node);
-	//		return;
-	//	}
-}
-
-DocData::MethodDoc VisualScriptPropertySelector::DocRunner::_get_method_doc(MethodInfo method_info) {
-	DocData::MethodDoc method_doc = DocData::MethodDoc();
-	method_doc.name = method_info.name;
-	method_doc.return_type = Variant::get_type_name(method_info.return_val.type);
-	method_doc.description = "No description available";
-	for (List<PropertyInfo>::Element *P = method_info.arguments.front(); P; P = P->next()) {
-		DocData::ArgumentDoc argument_doc = DocData::ArgumentDoc();
-		argument_doc.name = P->get().name;
-		argument_doc.type = Variant::get_type_name(P->get().type);
-		method_doc.arguments.push_back(argument_doc);
-	}
-	return method_doc;
-}
-
-bool VisualScriptPropertySelector::DocRunner::work(uint64_t slot) {
-	// Return true when the search has been completed, otherwise false.
-	const uint64_t until = OS::get_singleton()->get_ticks_usec() + slot;
-	while (!_slice()) {
-		if (OS::get_singleton()->get_ticks_usec() > until) {
-			return false;
-		}
-	}
-	return true;
-}
-
-VisualScriptPropertySelector::DocRunner::DocRunner(Vector<Ref<VisualScriptNode>> *p_result_nodes, Map<String, DocData::ClassDoc> *p_result_class_list) :
-		result_nodes(p_result_nodes),
-		result_class_list(p_result_class_list) {
-}
-
 bool VisualScriptPropertySelector::SearchRunner::_is_class_disabled_by_feature_profile(const StringName &p_class) {
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
 	if (profile.is_null()) {
@@ -1104,7 +892,10 @@ bool VisualScriptPropertySelector::SearchRunner::_slice() {
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
-	iterator_doc = class_docs->front();
+	//iterator_doc = class_docs->front();
+	iterator_doc = EditorHelp::get_doc_data()->class_list.front();
+	print_error("------------------");
+	print_error(iterator_doc->get().name);
 	matches.clear();
 	matched_item = nullptr;
 	match_highest_score = 0;
@@ -1321,6 +1112,7 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_hierarchy(co
 		}
 	}
 
+	//		print_error(p_match.doc->name);
 	TreeItem *class_item = _create_class_item(parent, p_match.doc, !p_match.name);
 	class_items[p_match.doc->name] = class_item;
 	return class_item;
@@ -1329,6 +1121,7 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_hierarchy(co
 TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
 	Ref<Texture2D> icon = empty_icon;
 	String name = p_doc->name;
+	//	print_error(p_doc->name);
 	if (p_doc->name.get_extension() != "") {
 		Ref<Script> script;
 		script = ResourceLoader::load(p_doc->name);
@@ -1345,7 +1138,6 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeIte
 			name = name.get_file();
 			name = "Faild to load " + name;
 		}
-
 	} else if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
 		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
 	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
@@ -1459,11 +1251,10 @@ bool VisualScriptPropertySelector::SearchRunner::work(uint64_t slot) {
 	return true;
 }
 
-VisualScriptPropertySelector::SearchRunner::SearchRunner(VisualScriptPropertySelector *p_selector_ui, Tree *p_results_tree, Map<String, DocData::ClassDoc> *p_class_docs) :
+VisualScriptPropertySelector::SearchRunner::SearchRunner(VisualScriptPropertySelector *p_selector_ui, Tree *p_results_tree) :
 		selector_ui(p_selector_ui),
 		ui_service(p_selector_ui->vbox),
 		results_tree(p_results_tree),
 		term(p_selector_ui->search_box->get_text()),
-		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))),
-		class_docs(p_class_docs) {
+		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))) {
 }

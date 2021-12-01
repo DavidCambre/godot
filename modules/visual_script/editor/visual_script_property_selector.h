@@ -70,11 +70,6 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	OptionButton *scope_combo;
 	Tree *results_tree;
 
-	class DocRunner;
-	Ref<DocRunner> doc_runner;
-	Vector<Ref<VisualScriptNode>> result_nodes;
-	Map<String, DocData::ClassDoc> result_class_list;
-
 	class SearchRunner;
 	Ref<SearchRunner> search_runner;
 
@@ -127,43 +122,6 @@ public:
 	void set_type_filter(const Vector<Variant::Type> &p_type_filter);
 
 	VisualScriptPropertySelector();
-};
-
-class VisualScriptPropertySelector::DocRunner : public RefCounted {
-	enum Phase {
-		PHASE_INIT_SEARCH,
-		PHASE_GET_ALL_FOLDER_PATHS,
-		PHASE_GET_ALL_FILE_PATHS,
-		PHASE_MAX
-	};
-	int phase = 0;
-
-	Vector<Ref<VisualScriptNode>> *result_nodes;
-	//Vector<Ref<Script>> *result_scripts;
-	Map<String, DocData::ClassDoc> *result_class_list;
-
-	// Config
-	Vector<String> _extension_filter;
-
-	// State
-	String _current_dir;
-	Vector<PackedStringArray> _folders_stack;
-	Vector<String> _files_to_scan;
-	int _initial_files_count = 0;
-
-	bool _slice();
-	bool _phase_init_search();
-	bool _phase_get_all_folder_paths();
-	bool _phase_get_all_file_paths();
-
-	void _scan_dir(String path, PackedStringArray &out_folders);
-	void _scan_file(String fpath);
-	DocData::MethodDoc _get_method_doc(MethodInfo method_info);
-
-public:
-	bool work(uint64_t slot = 100000);
-
-	DocRunner(Vector<Ref<VisualScriptNode>> *p_result_nodes, Map<String, DocData::ClassDoc> *p_result_class_list);
 };
 
 class VisualScriptPropertySelector::SearchRunner : public RefCounted {
@@ -238,7 +196,7 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 public:
 	bool work(uint64_t slot = 100000);
 
-	SearchRunner(VisualScriptPropertySelector *p_selector_ui, Tree *p_results_tree, Map<String, DocData::ClassDoc> *p_class_docs);
+	SearchRunner(VisualScriptPropertySelector *p_selector_ui, Tree *p_results_tree);
 };
 
 #endif // VISUALSCRIPT_PROPERTYSELECTOR_H
