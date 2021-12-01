@@ -126,7 +126,10 @@ public:
 
 class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	enum Phase {
+		PHASE_INIT,
 		PHASE_MATCH_CLASSES_INIT,
+		PHASE_NODE_CLASSES_INIT,
+		PHASE_NODE_CLASSES,
 		PHASE_MATCH_CLASSES,
 		PHASE_CLASS_ITEMS_INIT,
 		PHASE_CLASS_ITEMS,
@@ -171,10 +174,16 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	TreeItem *matched_item = nullptr;
 	float match_highest_score = 0;
 
+	Map<String, DocData::ClassDoc> combined_docs;
+	List<String> vs_nodes;
+
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
 
 	bool _slice();
+	bool _phase_init();
 	bool _phase_match_classes_init();
+	bool _phase_node_classes_init();
+	bool _phase_node_classes();
 	bool _phase_match_classes();
 	bool _phase_class_items_init();
 	bool _phase_class_items();
@@ -184,6 +193,7 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 
 	bool _match_string(const String &p_term, const String &p_string) const;
 	void _match_item(TreeItem *p_item, const String &p_text);
+	void _add_class_doc(String class_name, String inherits);
 	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);
 	TreeItem *_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray);
 	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc);
