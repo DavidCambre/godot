@@ -193,7 +193,7 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 
 	bool _match_string(const String &p_term, const String &p_string) const;
 	void _match_item(TreeItem *p_item, const String &p_text);
-	void _add_class_doc(String class_name, String inherits);
+	void _add_class_doc(String class_name, String inherits, String category);
 	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);
 	TreeItem *_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray);
 	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc);

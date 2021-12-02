@@ -912,7 +912,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_init() {
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
-	combined_docs =  EditorHelp::get_doc_data()->class_list;
+	combined_docs = EditorHelp::get_doc_data()->class_list;
 	iterator_doc = combined_docs.front();
 	matches.clear();
 	matched_item = nullptr;
@@ -922,124 +922,70 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes_init() {
 	VisualScriptLanguage::singleton->get_registered_node_names(&vs_nodes);
-	_add_class_doc("custom", "");
-	_add_class_doc("data", "");
-	_add_class_doc("flow_control", "");
-	_add_class_doc("functions", "");
-	_add_class_doc("built_in", "functions");
-	_add_class_doc("deconstruct", "functions");
-	_add_class_doc("built_in", "functions");
-	_add_class_doc("wait", "functions");
-	_add_class_doc("index", "");
-	_add_class_doc("operators", "");
-	_add_class_doc("bitwise", "operators");
-	_add_class_doc("compare", "operators");
-	_add_class_doc("logic", "operators");
-	_add_class_doc("math", "operators");
+	//	_add_class_doc("custom", "", "");
+	//	_add_class_doc("data", "", "");
+	//	_add_class_doc("flow_control", "", "");
+	_add_class_doc("functions", "", "");
+	//	_add_class_doc("built_in", "functions", "");
+	//	_add_class_doc("deconstruct", "functions", "");
+	//	_add_class_doc("built_in", "functions", "");
+	//	_add_class_doc("wait", "functions", "");
+	//	_add_class_doc("index", "", "");
+	_add_class_doc("operators", "", "");
+	//	_add_class_doc("bitwise", "operators", "");
+	//	_add_class_doc("compare", "operators", "");
+	//	_add_class_doc("logic", "operators", "");
+	//	_add_class_doc("math", "operators", "");
 
 	return true;
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes() {
-	if (vs_nodes.is_empty())
-	{
+	if (vs_nodes.is_empty()) {
 		return true;
 	}
 	String registerd_node_name = vs_nodes[0];
 	vs_nodes.pop_front();
-	
+
 	//print_error(registerd_node_name);
 
 	Vector<String> path = registerd_node_name.split("/");
-	if (path[0] == "constants")
-	{
+	if (path[0] == "constants") {
 		/* constants are to be created by the using the Datadocs */
-	}
-	else if (path[0] == "custom")
-	{
-		/* add as function under custom_nodes class */
-		/* class_category is VisualScriptNodes */
-	}
-	else if (path[0] == "data")
-	{
-		/* add as function under data_nodes class */
-		/* class_category is VisualScriptNodes */
-	}
-	else if (path[0] == "flow_control")
-	{
-		/* add as function under flow_control_nodes class */
-		/* class_category is VisualScriptNodes */
-	}
-	else if (path[0] == "functions")
-	{
-		if (path[1] == "built_in")
-		{
-			/* add as function under function_nodes class */
-			/* class_category is VisualScriptNodes */
-		}
-		else if (path[1] == "by_type")
-		{
+	} else if (path[0] == "custom") {
+		_add_class_doc(path[1], "", "custom");
+	} else if (path[0] == "data") {
+		_add_class_doc(path[1], "", "data");
+	} else if (path[0] == "flow_control") {
+		_add_class_doc(path[1], "", "flow_control");
+	} else if (path[0] == "functions") {
+		if (path[1] == "built_in") {
+			_add_class_doc(path[2], "functions", "built_in");
+		} else if (path[1] == "by_type") {
 			/* constructors are to be created by the using the Datadocs */
-		}
-		else if (path[1] == "constructors")
-		{
+		} else if (path[1] == "constructors") {
 			/* constructors are to be created by the using the Datadocs */
 
+		} else if (path[1] == "deconstruct") {
+			_add_class_doc(path[2], "functions", "deconstruct");
+		} else if (path[1] == "wait") {
+			_add_class_doc(path[2], "functions", "yield");
+		} else {
+			_add_class_doc(path[1], "functions", "");
 		}
-		else if (path[1] == "deconstruct")
-		{
-			/*AABB
-			Basis
-			Color
-			Plane
-			Quaternion
-			Rect2
-			Rect2i
-			Transform2D
-			Transform3D
-			Vector2
-			Vector2i
-			Vector3
-			Vector3i
-			*/
-		}
-		else if (path[1] == "wait")
-		{
-			/* Spesial case to be desided */
-		}
-		else
-		{
-			/* add as function under function_nodes class */
-			/* class_category is VisualScriptNodes */
-		}
-	}
-	else if (path[0] == "index")
-	{
-		/* add as function under index_nodes class */
-		/* class_category is VisualScriptNodes */
-	}
-	else if (path[0] == "operators")
-	{
-		if (path[1] == "bitwise")
-		{
-			/* add as function under operators_bitwise_nodes class */
-		}
-		else if (path[1] == "compare")
-		{
-			/* add as function under operators_compare_nodes class */
-		}
-		else if (path[1] == "logic")
-		{
-			/* add as function under operators_logic_nodes class */
-		}
-		else if (path[1] == "math")
-		{
-			/* add as function under operators_math_nodes class */
-		}
-		else
-		{
-			/* add as function under operators_nodes class */
-			/* class_category is VisualScriptNodes */
+	} else if (path[0] == "index") {
+		_add_class_doc(path[1], "", "index");
+	} else if (path[0] == "operators") {
+		if (path[1] == "bitwise") {
+			_add_class_doc(path[2], "operators", "bitwise");
+		} else if (path[1] == "compare") {
+			_add_class_doc(path[2], "operators", "compare");
+		} else if (path[1] == "logic") {
+			_add_class_doc(path[2], "operators", "logic");
+		} else if (path[1] == "math") {
+			_add_class_doc(path[2], "operators", "math");
+		} else {
+			_add_class_doc(path[1], "operators", "");
 		}
 	}
 	return false;
@@ -1233,12 +1179,12 @@ void VisualScriptPropertySelector::SearchRunner::_match_item(TreeItem *p_item, c
 	}
 }
 
-void VisualScriptPropertySelector::SearchRunner::_add_class_doc(String class_name, String inherits){
-	
+void VisualScriptPropertySelector::SearchRunner::_add_class_doc(String class_name, String inherits, String category) {
 	DocData::ClassDoc class_doc = DocData::ClassDoc();
 	class_doc.name = class_name;
 	class_doc.inherits = inherits;
-	class_doc.category = "VisualScriptNode";
+	class_doc.category = "VisualScriptNode/" + category;
+	class_doc.brief_description = category;
 	combined_docs.insert(class_doc.name, class_doc);
 }
 
