@@ -953,39 +953,39 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes() {
 	if (path[0] == "constants") {
 		/* constants are to be created by the using the Datadocs */
 	} else if (path[0] == "custom") {
-		_add_class_doc(path[1], "", "custom");
+		_add_class_doc(registerd_node_name, "", "custom");
 	} else if (path[0] == "data") {
-		_add_class_doc(path[1], "", "data");
+		_add_class_doc(registerd_node_name, "", "data");
 	} else if (path[0] == "flow_control") {
-		_add_class_doc(path[1], "", "flow_control");
+		_add_class_doc(registerd_node_name, "", "flow_control");
 	} else if (path[0] == "functions") {
 		if (path[1] == "built_in") {
-			_add_class_doc(path[2], "functions", "built_in");
+			_add_class_doc(registerd_node_name, "functions", "built_in");
 		} else if (path[1] == "by_type") {
 			/* constructors are to be created by the using the Datadocs */
 		} else if (path[1] == "constructors") {
 			/* constructors are to be created by the using the Datadocs */
 
 		} else if (path[1] == "deconstruct") {
-			_add_class_doc(path[2], "functions", "deconstruct");
+			_add_class_doc(registerd_node_name, "functions", "deconstruct");
 		} else if (path[1] == "wait") {
-			_add_class_doc(path[2], "functions", "yield");
+			_add_class_doc(registerd_node_name, "functions", "yield");
 		} else {
-			_add_class_doc(path[1], "functions", "");
+			_add_class_doc(registerd_node_name, "functions", "");
 		}
 	} else if (path[0] == "index") {
-		_add_class_doc(path[1], "", "index");
+		_add_class_doc(registerd_node_name, "", "index");
 	} else if (path[0] == "operators") {
 		if (path[1] == "bitwise") {
-			_add_class_doc(path[2], "operators", "bitwise");
+			_add_class_doc(registerd_node_name, "operators", "bitwise");
 		} else if (path[1] == "compare") {
-			_add_class_doc(path[2], "operators", "compare");
+			_add_class_doc(registerd_node_name, "operators", "compare");
 		} else if (path[1] == "logic") {
-			_add_class_doc(path[2], "operators", "logic");
+			_add_class_doc(registerd_node_name, "operators", "logic");
 		} else if (path[1] == "math") {
-			_add_class_doc(path[2], "operators", "math");
+			_add_class_doc(registerd_node_name, "operators", "math");
 		} else {
-			_add_class_doc(path[1], "operators", "");
+			_add_class_doc(registerd_node_name, "operators", "");
 		}
 	}
 	return false;
@@ -997,6 +997,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 		matches[class_doc.name] = ClassMatch();
 		ClassMatch &match = matches[class_doc.name];
 
+		match.category = class_doc.category;
 		match.doc = &class_doc;
 		// Match class name.
 		if (search_flags & SEARCH_CLASSES) {
@@ -1211,27 +1212,52 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_hierarchy(co
 
 TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray) {
 	Ref<Texture2D> icon = empty_icon;
-	String name = p_doc->name;
+	String text_0 = p_doc->name;
+	String text_1 = "Class";
 
-	if (p_doc->name.is_quoted()) {
-		name = p_doc->name.unquote().get_file();
-		if (ui_service->has_theme_icon(p_doc->inherits, "EditorIcons")) {
-			icon = ui_service->get_theme_icon(p_doc->inherits, "EditorIcons");
+	String what = "";
+	String details = "";
+
+	if (p_doc->category.begins_with("VisualScriptNode/")) {
+		Vector<String> path = p_doc->name.split("/");
+		icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
+		text_0 = path[path.size() - 1];
+		text_1 = "VisualScriptNode";
+		what = "VisualScriptNode";
+		//what = "VisualScriptCustomNode"; greate from script
+		details = "p_doc->name";
+
+		if (path.size() == 1) {
+			if (path[0] == "functions" || path[0] == "operators") {
+				text_1 = "VisualScript";
+				p_gray = true;
+				what = "no_result";
+				details = "";
+			}
 		}
-	} else if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
-		icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
-	} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
-		icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+
+	} else {
+		if (p_doc->name.is_quoted()) {
+			text_0 = p_doc->name.unquote().get_file();
+			if (ui_service->has_theme_icon(p_doc->inherits, "EditorIcons")) {
+				icon = ui_service->get_theme_icon(p_doc->inherits, "EditorIcons");
+			}
+		} else if (ui_service->has_theme_icon(p_doc->name, "EditorIcons")) {
+			icon = ui_service->get_theme_icon(p_doc->name, "EditorIcons");
+		} else if (ClassDB::class_exists(p_doc->name) && ClassDB::is_parent_class(p_doc->name, "Object")) {
+			icon = ui_service->get_theme_icon(SNAME("Object"), SNAME("EditorIcons"));
+		}
 	}
 	String tooltip = p_doc->brief_description.strip_edges();
 
 	TreeItem *item = results_tree->create_item(p_parent);
 	item->set_icon(0, icon);
-	item->set_text(0, name);
-	item->set_text(1, TTR("Class"));
+	item->set_text(0, text_0);
+	item->set_text(1, TTR(text_1));
 	item->set_tooltip(0, tooltip);
 	item->set_tooltip(1, tooltip);
-	item->set_metadata(0, "class_name:" + name);
+	item->set_metadata(0, what);
+	item->set_metadata(1, details);
 	if (p_gray) {
 		item->set_custom_color(0, disabled_color);
 		item->set_custom_color(1, disabled_color);
@@ -1299,11 +1325,6 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_member_item(TreeIt
 		text = p_text;
 	} else {
 		icon = ui_service->get_theme_icon(p_icon, SNAME("EditorIcons"));
-		/*// In flat mode, show the class icon.
-if (ui_service->has_icon(p_class_name, "EditorIcons"))
-icon = ui_service->get_icon(p_class_name, "EditorIcons");
-else if (ClassDB::is_parent_class(p_class_name, "Object"))
-icon = ui_service->get_icon("Object", "EditorIcons");*/
 		text = p_class_name + "." + p_text;
 	}
 
@@ -1313,7 +1334,8 @@ icon = ui_service->get_icon("Object", "EditorIcons");*/
 	item->set_text(1, TTRGET(p_type));
 	item->set_tooltip(0, p_tooltip);
 	item->set_tooltip(1, p_tooltip);
-	item->set_metadata(0, "class_" + p_metatype + ":" + p_class_name + ":" + p_name);
+	item->set_metadata(0, "class_" + p_metatype);
+	item->set_metadata(1, p_class_name + ":" + p_name);
 
 	_match_item(item, p_name);
 

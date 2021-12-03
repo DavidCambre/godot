@@ -143,6 +143,7 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	struct ClassMatch {
 		DocData::ClassDoc *doc;
 		bool name = false;
+		String category = "";
 		Vector<DocData::MethodDoc *> constructors;
 		Vector<DocData::MethodDoc *> methods;
 		Vector<DocData::MethodDoc *> operators;
