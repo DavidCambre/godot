@@ -994,6 +994,34 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes() {
 bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 	DocData::ClassDoc &class_doc = iterator_doc->value();
 	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
+		if (class_doc.inherits == "VisualScriptCustomNode") {
+			class_doc.script_path = "res://" + class_doc.name.unquote();
+			Ref<Script> script = ResourceLoader::load(class_doc.script_path);
+			Ref<VisualScriptCustomNode> vsn;
+			vsn.instantiate();
+			vsn->set_script(script);
+			class_doc.name = vsn->get_caption();
+			if (combined_docs.has(vsn->get_category())) {
+				class_doc.inherits = vsn->get_category();
+			} else if (combined_docs.has("VisualScriptNode/" + vsn->get_category())) {
+				class_doc.inherits = "VisualScriptNode/" + vsn->get_category();
+			} else if (combined_docs.has("VisualScriptCustomNode/" + vsn->get_category())) {
+				class_doc.inherits = "VisualScriptCustomNode/" + vsn->get_category();
+			} else {
+				class_doc.inherits = "";
+			}
+			class_doc.category = "VisualScriptCustomNode/" + vsn->get_category();
+			class_doc.brief_description = "";
+			class_doc.constructors.clear();
+			class_doc.methods.clear();
+			class_doc.operators.clear();
+			class_doc.signals.clear();
+			class_doc.constants.clear();
+			class_doc.enums.clear();
+			class_doc.properties.clear();
+			class_doc.theme_properties.clear();
+		}
+
 		matches[class_doc.name] = ClassMatch();
 		ClassMatch &match = matches[class_doc.name];
 
@@ -1086,18 +1114,13 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_class_items_init() {
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_class_items() {
 	ClassMatch &match = iterator_match->value();
-
-	if (match.doc->inherits == "VisualScriptCustomNode") {
-		// doc needs to rerouted to the VS_nodes System.
-		//icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
-		//p_doc->name = p_doc->name.get_file().trim_suffix("." + p_doc->name.get_extension());
-	} else if (search_flags & SEARCH_SHOW_HIERARCHY) {
+	if (search_flags & SEARCH_SHOW_HIERARCHY) {
 		if (match.required()) {
 			_create_class_hierarchy(match);
 		}
 	} else {
 		if (match.name) {
-			_create_class_item(root_item, match.doc, false);
+			_create_class_item(root_item, match.doc, true);
 		}
 	}
 
@@ -1217,15 +1240,21 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeIte
 
 	String what = "";
 	String details = "";
-
-	if (p_doc->category.begins_with("VisualScriptNode/")) {
+	//	print_error(p_doc->category);
+	if (p_doc->category.begins_with("VisualScriptCustomNode/")) {
+		Vector<String> path = p_doc->name.split("/");
+		icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
+		text_0 = path[path.size() - 1];
+		text_1 = "VisualScriptCustomNode";
+		what = "VisualScriptCustomNode";
+		details = "CustomNode";
+	} else if (p_doc->category.begins_with("VisualScriptNode/")) {
 		Vector<String> path = p_doc->name.split("/");
 		icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
 		text_0 = path[path.size() - 1];
 		text_1 = "VisualScriptNode";
 		what = "VisualScriptNode";
-		//what = "VisualScriptCustomNode"; greate from script
-		details = "p_doc->name";
+		details = p_doc->name;
 
 		if (path.size() == 1) {
 			if (path[0] == "functions" || path[0] == "operators") {
@@ -1358,5 +1387,6 @@ VisualScriptPropertySelector::SearchRunner::SearchRunner(VisualScriptPropertySel
 		ui_service(p_selector_ui->vbox),
 		results_tree(p_results_tree),
 		term(p_selector_ui->search_box->get_text()),
-		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))) {
+		empty_icon(ui_service->get_theme_icon(SNAME("ArrowRight"), SNAME("EditorIcons"))),
+		disabled_color(ui_service->get_theme_color(SNAME("disabled_font_color"), SNAME("Editor"))) {
 }
