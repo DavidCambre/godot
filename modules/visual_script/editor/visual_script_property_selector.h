@@ -61,9 +61,6 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	};
 
 	LineEdit *search_box;
-	Button *search_base_button;
-	Button *search_inheritors_button;
-	Button *search_unrelated_button;
 	Button *case_sensitive_button;
 	Button *hierarchy_button;
 	OptionButton *filter_combo;
@@ -92,6 +89,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	String selected;
 	Variant::Type type;
 	String base_type;
+	String base_script;
 	ObjectID script;
 	Object *instance;
 	bool virtuals_only;
@@ -154,6 +152,7 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	Tree *results_tree;
 	String term;
 	int search_flags;
+	int scope_flags;
 
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
@@ -170,6 +169,7 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	List<String> vs_nodes;
 
 	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
+	bool _is_class_disabled_by_scope(const StringName &p_class);
 
 	bool _slice();
 	bool _phase_init();

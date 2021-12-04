@@ -239,6 +239,7 @@ void VisualScriptPropertySelector::_notification(int p_what) {
 
 void VisualScriptPropertySelector::select_method_from_base_type(const String &p_base, const String &p_current, const bool p_virtuals_only, const bool p_connecting, bool clear_text) {
 	base_type = p_base;
+	base_script = "";
 	selected = p_current;
 	type = Variant::NIL;
 	properties = false;
@@ -247,10 +248,15 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 
 	show_window(.5f);
 	if (clear_text) {
-		search_box->set_text("");
+		search_box->set_text("."); // show all methods
 	} else {
 		search_box->select_all();
 	}
+	case_sensitive_button->set_pressed(false);
+	hierarchy_button->set_pressed(true);
+	filter_combo->select(4); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
+	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
 	connecting = p_connecting;
 
@@ -258,7 +264,9 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 }
 
 void VisualScriptPropertySelector::select_from_base_type(const String &p_base, const String &p_current, bool p_virtuals_only, bool p_seq_connect, const bool p_connecting, bool clear_text) {
+	// needs to get nodes base script. to give beter hints
 	base_type = p_base;
+	base_script = "";
 	selected = p_current;
 	type = Variant::NIL;
 	properties = true;
@@ -272,6 +280,11 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	} else {
 		search_box->select_all();
 	}
+	case_sensitive_button->set_pressed(false);
+	hierarchy_button->set_pressed(true);
+	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
+	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
 	seq_connect = p_seq_connect;
 	connecting = p_connecting;
@@ -283,6 +296,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	ERR_FAIL_COND(p_script.is_null());
 
 	base_type = p_script->get_instance_base_type();
+	base_script = p_script->get_path();
 	selected = p_current;
 	type = Variant::NIL;
 	script = p_script->get_instance_id();
@@ -297,6 +311,11 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	} else {
 		search_box->select_all();
 	}
+	case_sensitive_button->set_pressed(false);
+	hierarchy_button->set_pressed(true);
+	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
+	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
 	seq_connect = false;
 	connecting = p_connecting;
@@ -307,6 +326,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, const String &p_current, const bool p_connecting, bool clear_text) {
 	ERR_FAIL_COND(p_type == Variant::NIL);
 	base_type = "";
+	base_script = "";
 	selected = p_current;
 	type = p_type;
 	properties = true;
@@ -320,6 +340,11 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 	} else {
 		search_box->select_all();
 	}
+	case_sensitive_button->set_pressed(false);
+	hierarchy_button->set_pressed(true);
+	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
+	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
 	seq_connect = false;
 	connecting = p_connecting;
@@ -329,6 +354,7 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 
 void VisualScriptPropertySelector::select_from_action(const String &p_type, const String &p_current, const bool p_connecting, bool clear_text) {
 	base_type = p_type;
+	base_script = "";
 	selected = p_current;
 	type = Variant::NIL;
 	properties = false;
@@ -342,6 +368,11 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	} else {
 		search_box->select_all();
 	}
+	case_sensitive_button->set_pressed(false);
+	hierarchy_button->set_pressed(true);
+	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
+	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
 	seq_connect = true;
 	connecting = p_connecting;
@@ -351,6 +382,7 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 
 void VisualScriptPropertySelector::select_from_instance(Object *p_instance, const String &p_current, const bool p_connecting, const String &p_basetype, bool clear_text) {
 	base_type = p_basetype;
+	base_script = "";
 	selected = p_current;
 	type = Variant::NIL;
 	properties = true;
@@ -364,6 +396,11 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	} else {
 		search_box->select_all();
 	}
+	case_sensitive_button->set_pressed(false);
+	hierarchy_button->set_pressed(true);
+	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
+	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
 	seq_connect = false;
 	connecting = p_connecting;
@@ -373,6 +410,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 
 void VisualScriptPropertySelector::select_from_visual_script(const String &p_base, const bool p_connecting, bool clear_text) {
 	base_type = p_base;
+	base_script = "";
 	selected = "";
 	type = Variant::NIL;
 	properties = true;
@@ -385,6 +423,11 @@ void VisualScriptPropertySelector::select_from_visual_script(const String &p_bas
 	} else {
 		search_box->select_all();
 	}
+	case_sensitive_button->set_pressed(false);
+	hierarchy_button->set_pressed(true);
+	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
+	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
 	connecting = p_connecting;
 	_update_results();
@@ -507,6 +550,48 @@ bool VisualScriptPropertySelector::SearchRunner::_is_class_disabled_by_feature_p
 	return false;
 }
 
+bool VisualScriptPropertySelector::SearchRunner::_is_class_disabled_by_scope(const StringName &p_class) {
+	bool is_base_script = false;
+	if (p_class == selector_ui->base_script) {
+		is_base_script = true;
+	}
+	bool is_base = false;
+	if (selector_ui->base_type == p_class) {
+		is_base = true;
+	}
+	bool is_parent = false;
+	if ((ClassDB::is_parent_class(selector_ui->base_type, p_class)) && !is_base) {
+		is_parent = true;
+	}
+
+	bool is_inheriter = false;
+	List<StringName> inheriters;
+	ClassDB::get_inheriters_from_class(selector_ui->base_type, &inheriters);
+	if (inheriters.find(p_class)) {
+		is_inheriter = true;
+	}
+
+	if (scope_flags & SCOPE_BASE) {
+		if (is_base_script || is_base || is_parent) {
+			return false;
+		}
+	}
+	if (scope_flags & SCOPE_INHERITERS) {
+		if (is_base_script || is_base || is_inheriter) {
+			return false;
+		}
+	}
+	//	if (scope_flags & SCOPE_RELATED) {
+	//		/* code */
+	//	}
+	if (scope_flags & SCOPE_UNRELATED) {
+		if (!is_base_script && !is_base && !is_inheriter) {
+			return false;
+		}
+	}
+	return true;
+}
+
 bool VisualScriptPropertySelector::SearchRunner::_slice() {
 	bool phase_done = false;
 	switch (phase) {
@@ -561,6 +646,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_init() {
 	if (selector_ui->hierarchy_button->is_pressed()) {
 		search_flags |= SEARCH_SHOW_HIERARCHY;
 	}
+	scope_flags = selector_ui->scope_combo->get_selected_id();
 	return true;
 }
 
@@ -630,7 +716,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes() {
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 	DocData::ClassDoc &class_doc = iterator_doc->value();
-	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
+	if (!_is_class_disabled_by_feature_profile(class_doc.name) && !_is_class_disabled_by_scope(class_doc.name)) {
 		if (class_doc.inherits == "VisualScriptCustomNode") {
 			class_doc.script_path = "res://" + class_doc.name.unquote();
 			Ref<Script> script = ResourceLoader::load(class_doc.script_path);
@@ -670,7 +756,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 		}
 
 		// Match members if the term is long enough.
-		if (term.length() > 1) {
+		if (term.length() > 0) {
 			if (search_flags & SEARCH_CONSTRUCTORS) {
 				for (int i = 0; i < class_doc.constructors.size(); i++) {
 					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.constructors[i].name : class_doc.constructors[i].name.to_lower();
@@ -859,7 +945,7 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_hierarchy(co
 	if (p_match.doc->inherits != "") {
 		if (class_items.has(p_match.doc->inherits)) {
 			parent = class_items[p_match.doc->inherits];
-		} else {
+		} else if (matches.has(p_match.doc->inherits)) {
 			ClassMatch &base_match = matches[p_match.doc->inherits];
 			parent = _create_class_hierarchy(base_match);
 		}
