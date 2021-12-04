@@ -763,7 +763,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hbox->add_child(search_box);
 
 	case_sensitive_button = memnew(Button);
-	//	case_sensitive_button->set_flat(true); comented until update icon is working
+	case_sensitive_button->set_flat(true);
 	case_sensitive_button->set_tooltip(TTR("Case Sensitive"));
 	case_sensitive_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
 	case_sensitive_button->set_toggle_mode(true);
@@ -771,7 +771,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hbox->add_child(case_sensitive_button);
 
 	hierarchy_button = memnew(Button);
-	//	hierarchy_button->set_flat(true); comented until update icon is working
+	hierarchy_button->set_flat(true);
 	hierarchy_button->set_tooltip(TTR("Show Hierarchy"));
 	hierarchy_button->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
 	hierarchy_button->set_toggle_mode(true);
@@ -809,9 +809,8 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	results_tree = memnew(Tree);
 	results_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	results_tree->set_hide_root(true);
-	//	results_tree->set_hide_folding(true);
-	results_tree->set_columns(3); // needed for original _update_search()
-	//	results_tree->set_columns(2);
+	results_tree->set_hide_folding(true);
+	results_tree->set_columns(2);
 	results_tree->set_column_title(0, TTR("Name"));
 	results_tree->set_column_clip_content(0, true);
 	results_tree->set_column_title(1, TTR("Member Type"));
@@ -820,7 +819,6 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	results_tree->set_column_clip_content(1, true);
 	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
-	//	results_tree->set_column_expand(2, false);
 	results_tree->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
 	results_tree->connect("cell_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
 	vbox->add_margin_child(TTR("Matches:"), results_tree, true);
@@ -922,21 +920,8 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes_init() {
 	VisualScriptLanguage::singleton->get_registered_node_names(&vs_nodes);
-	//	_add_class_doc("custom", "", "");
-	//	_add_class_doc("data", "", "");
-	//	_add_class_doc("flow_control", "", "");
 	_add_class_doc("functions", "", "");
-	//	_add_class_doc("built_in", "functions", "");
-	//	_add_class_doc("deconstruct", "functions", "");
-	//	_add_class_doc("built_in", "functions", "");
-	//	_add_class_doc("wait", "functions", "");
-	//	_add_class_doc("index", "", "");
 	_add_class_doc("operators", "", "");
-	//	_add_class_doc("bitwise", "operators", "");
-	//	_add_class_doc("compare", "operators", "");
-	//	_add_class_doc("logic", "operators", "");
-	//	_add_class_doc("math", "operators", "");
-
 	return true;
 }
 
@@ -946,8 +931,6 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes() {
 	}
 	String registerd_node_name = vs_nodes[0];
 	vs_nodes.pop_front();
-
-	//print_error(registerd_node_name);
 
 	Vector<String> path = registerd_node_name.split("/");
 	if (path[0] == "constants") {
@@ -965,7 +948,6 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes() {
 			/* constructors are to be created by the using the Datadocs */
 		} else if (path[1] == "constructors") {
 			/* constructors are to be created by the using the Datadocs */
-
 		} else if (path[1] == "deconstruct") {
 			_add_class_doc(registerd_node_name, "functions", "deconstruct");
 		} else if (path[1] == "wait") {
@@ -1240,7 +1222,6 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeIte
 
 	String what = "";
 	String details = "";
-	//	print_error(p_doc->category);
 	if (p_doc->category.begins_with("VisualScriptCustomNode/")) {
 		Vector<String> path = p_doc->name.split("/");
 		icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
