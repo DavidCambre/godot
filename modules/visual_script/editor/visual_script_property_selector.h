@@ -74,15 +74,11 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	Ref<SearchRunner> search_runner;
 
 	void _update_icons();
-	
+
 	void _sbox_input(const Ref<InputEvent> &p_ie);
 	void _update_results_i(int p_int);
 	void _update_results_s(String p_string);
 	void _update_results();
-	void _update_search();
-
-	void create_visualscript_item(const String &name, TreeItem *const root, const String &search_input, const String &text);
-	void get_visual_node_names(const String &root_filter, const Set<String> &p_modifiers, bool &found, TreeItem *const root, LineEdit *const search_box);
 
 	void _confirmed();
 	void _item_selected();
