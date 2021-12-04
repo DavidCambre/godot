@@ -98,8 +98,6 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	bool seq_connect;
 	VBoxContainer *vbox;
 
-	Vector<Variant::Type> type_filter;
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -114,8 +112,6 @@ public:
 	void select_from_visual_script(const String &p_base, const bool p_connecting = true, bool clear_text = true);
 
 	void show_window(float p_screen_ratio);
-
-	void set_type_filter(const Vector<Variant::Type> &p_type_filter);
 
 	VisualScriptPropertySelector();
 };

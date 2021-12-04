@@ -257,10 +257,6 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	_update_results();
 }
 
-void VisualScriptPropertySelector::set_type_filter(const Vector<Variant::Type> &p_type_filter) {
-	type_filter = p_type_filter;
-}
-
 void VisualScriptPropertySelector::select_from_base_type(const String &p_base, const String &p_current, bool p_virtuals_only, bool p_seq_connect, const bool p_connecting, bool clear_text) {
 	base_type = p_base;
 	selected = p_current;
