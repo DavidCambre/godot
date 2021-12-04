@@ -158,7 +158,6 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	Ref<Texture2D> empty_icon;
 	Color disabled_color;
 
-	Map<String, DocData::ClassDoc> *class_docs;
 	Map<String, DocData::ClassDoc>::Element *iterator_doc = nullptr;
 	Map<String, ClassMatch> matches;
 	Map<String, ClassMatch>::Element *iterator_match = nullptr;
