@@ -88,7 +88,7 @@ void VisualScriptPropertySelector::_confirmed() {
 	if (!ti) {
 		return;
 	}
-	emit_signal(SNAME("selected"), ti->get_metadata(0), ti->get_metadata(1), ti->get_metadata(2));
+	emit_signal(SNAME("selected"), ti->get_metadata(0), ti->get_metadata(1), connecting);
 	set_visible(false);
 }
 
@@ -342,6 +342,7 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 }
 
 void VisualScriptPropertySelector::select_from_action(const String &p_type, const String &p_current, const bool p_connecting, bool clear_text) {
+	// action is drag from sequence port ?
 	set_title(TTR("Select from action"));
 	base_type = p_type;
 	base_script = "";
@@ -953,8 +954,8 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeIte
 	String text_0 = p_doc->name;
 	String text_1 = "Class";
 
-	String what = "";
-	String details = "";
+	String what = "Class";
+	String details = p_doc->name;
 	if (p_doc->category.begins_with("VisualScriptCustomNode/")) {
 		Vector<String> path = p_doc->name.split("/");
 		icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
@@ -999,8 +1000,8 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeIte
 	item->set_text(1, TTR(text_1));
 	item->set_tooltip(0, tooltip);
 	item->set_tooltip(1, tooltip);
-	item->set_metadata(0, what);
-	item->set_metadata(1, details);
+	item->set_metadata(0, details);
+	item->set_metadata(1, what);
 	if (p_gray) {
 		item->set_custom_color(0, disabled_color);
 		item->set_custom_color(1, disabled_color);
@@ -1077,8 +1078,8 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_member_item(TreeIt
 	item->set_text(1, TTRGET(p_type));
 	item->set_tooltip(0, p_tooltip);
 	item->set_tooltip(1, p_tooltip);
-	item->set_metadata(0, "class_" + p_metatype);
-	item->set_metadata(1, p_class_name + ":" + p_name);
+	item->set_metadata(0, p_class_name + ":" + p_name);
+	item->set_metadata(1, "class_" + p_metatype);
 
 	_match_item(item, p_name);
 

@@ -3292,13 +3292,9 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 	drop_position = Vector2();
 
 	bool port_node_exists = true;
-
-	// if (func == StringName()) {
-	// 	func = default_func;
-	// 	port_node_exists = false;
-	// }
-
-	if (p_category == "visualscript") {
+	// "VisualScriptCustomNode"
+	// "VisualScriptNode"
+	if (p_category.begins_with("VisualScriptNode")) {
 		Ref<VisualScriptNode> vnode_new = VisualScriptLanguage::singleton->create_node_from_name(p_text);
 		Ref<VisualScriptNode> vnode_old;
 		if (port_node_exists && p_connecting) {
@@ -3340,8 +3336,11 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 
 	Ref<VisualScriptNode> vnode;
 	Ref<VisualScriptPropertySet> script_prop_set;
+	if (p_category.begins_with("class_")) {
+		print_error(p_category);
+	}
 
-	if (p_category == String("method")) {
+	if (p_category == String("class_method")) {
 		Ref<VisualScriptFunctionCall> n;
 		n.instantiate();
 		if (!drop_path.is_empty()) {
@@ -3447,8 +3446,12 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 	Ref<VisualScriptNode> vsn = script->get_node(port_action_new_node);
 
 	if (Object::cast_to<VisualScriptFunctionCall>(vsn.ptr())) {
+		Vector<String> split = p_text.split(":");
+		String class_of_method = split[0];
+		String method_name = split[1];
+
 		Ref<VisualScriptFunctionCall> vsfc = vsn;
-		vsfc->set_function(p_text);
+		vsfc->set_function(method_name);
 
 		if (port_node_exists && p_connecting) {
 			VisualScriptNode::TypeGuess tg = _guess_output_type(port_action_node, port_action_output, vn);
@@ -3465,7 +3468,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 					if (!base_type.is_empty() && hint == PROPERTY_HINT_TYPE_STRING) {
 						vsfc->set_base_type(base_type);
 					}
-					if (p_text == "call" || p_text == "call_deferred") {
+					if (method_name == "call" || method_name == "call_deferred") {
 						vsfc->set_function(String(""));
 					}
 				}
@@ -3542,6 +3545,11 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			}
 		}
 	}
+	if (vnode == nullptr) {
+		print_error("Not able to create node from category: \"" + p_category + "\" and text \"" + p_text + "\" Not created");
+		return;
+	}
+
 	if (port_node_exists) {
 		Ref<VisualScriptNode> vnode_old = script->get_node(port_action_node);
 		if (vnode_old.is_valid() && p_connecting) {

@@ -196,7 +196,7 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	TreeItem *_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip);
 
 public:
-	bool work(uint64_t slot = 100000);
+	bool work(uint64_t slot = 10000);
 
 	SearchRunner(VisualScriptPropertySelector *p_selector_ui, Tree *p_results_tree);
 };
