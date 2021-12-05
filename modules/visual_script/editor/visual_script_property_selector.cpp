@@ -62,22 +62,6 @@ void VisualScriptPropertySelector::_sbox_input(const Ref<InputEvent> &p_ie) {
 			case Key::PAGEDOWN: {
 				results_tree->gui_input(k);
 				search_box->accept_event();
-
-				TreeItem *root = results_tree->get_root();
-				if (!root->get_first_child()) {
-					break;
-				}
-
-				TreeItem *current = results_tree->get_selected();
-
-				TreeItem *item = results_tree->get_next_selected(root);
-				while (item) {
-					item->deselect(0);
-					item = results_tree->get_next_selected(item);
-				}
-
-				current->select(0);
-
 			} break;
 			default:
 				break;
@@ -238,6 +222,7 @@ void VisualScriptPropertySelector::_notification(int p_what) {
 }
 
 void VisualScriptPropertySelector::select_method_from_base_type(const String &p_base, const String &p_current, const bool p_virtuals_only, const bool p_connecting, bool clear_text) {
+	set_title(TTR("Select method from base type"));
 	base_type = p_base;
 	base_script = "";
 	selected = p_current;
@@ -264,7 +249,9 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 }
 
 void VisualScriptPropertySelector::select_from_base_type(const String &p_base, const String &p_current, bool p_virtuals_only, bool p_seq_connect, const bool p_connecting, bool clear_text) {
+	set_title(TTR("Select from base type"));
 	// needs to get nodes base script. to give beter hints
+	// needs hint to contiunue instace refrence
 	base_type = p_base;
 	base_script = "";
 	selected = p_current;
@@ -293,6 +280,7 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 }
 
 void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_script, const String &p_current, const bool p_connecting, bool clear_text) {
+	set_title(TTR("Select from script"));
 	ERR_FAIL_COND(p_script.is_null());
 
 	base_type = p_script->get_instance_base_type();
@@ -324,8 +312,9 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 }
 
 void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, const String &p_current, const bool p_connecting, bool clear_text) {
+	set_title(TTR("Select from basic type"));
 	ERR_FAIL_COND(p_type == Variant::NIL);
-	base_type = "";
+	base_type = Variant::get_type_name(p_type);
 	base_script = "";
 	selected = p_current;
 	type = p_type;
@@ -336,7 +325,7 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 
 	show_window(.5f);
 	if (clear_text) {
-		search_box->set_text("");
+		search_box->set_text(".");
 	} else {
 		search_box->select_all();
 	}
@@ -353,6 +342,7 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 }
 
 void VisualScriptPropertySelector::select_from_action(const String &p_type, const String &p_current, const bool p_connecting, bool clear_text) {
+	set_title(TTR("Select from action"));
 	base_type = p_type;
 	base_script = "";
 	selected = p_current;
@@ -381,6 +371,7 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 }
 
 void VisualScriptPropertySelector::select_from_instance(Object *p_instance, const String &p_current, const bool p_connecting, const String &p_basetype, bool clear_text) {
+	set_title(TTR("Select from instance"));
 	base_type = p_basetype;
 	base_script = "";
 	selected = p_current;
@@ -409,6 +400,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 }
 
 void VisualScriptPropertySelector::select_from_visual_script(const String &p_base, const bool p_connecting, bool clear_text) {
+	set_title(TTR("Select from visual script"));
 	base_type = p_base;
 	base_script = "";
 	selected = "";
