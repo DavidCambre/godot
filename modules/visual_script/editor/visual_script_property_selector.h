@@ -63,7 +63,18 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	LineEdit *search_box;
 	Button *case_sensitive_button;
 	Button *hierarchy_button;
-	OptionButton *filter_combo;
+
+	//	OptionButton *filter_combo;
+	//	int filter_combo = 0;
+	Button *search_classes;
+	Button *search_constructors;
+	Button *search_methods;
+	Button *search_operators;
+	Button *search_signals;
+	Button *search_constants;
+	Button *search_properties;
+	Button *search_theme_items;
+
 	OptionButton *scope_combo;
 	Tree *results_tree;
 

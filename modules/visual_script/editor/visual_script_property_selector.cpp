@@ -47,6 +47,15 @@ void VisualScriptPropertySelector::_update_icons() {
 	search_box->set_right_icon(results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 	search_box->set_clear_button_enabled(true);
 	search_box->add_theme_icon_override("right_icon", results_tree->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
+	
+	search_classes->set_icon(results_tree->get_theme_icon(SNAME("Object"), SNAME("EditorIcons")));
+	search_methods->set_icon(results_tree->get_theme_icon(SNAME("MemberMethod"), SNAME("EditorIcons")));
+	search_operators->set_icon(results_tree->get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
+	search_signals->set_icon(results_tree->get_theme_icon(SNAME("MemberSignal"), SNAME("EditorIcons")));
+	search_constants->set_icon(results_tree->get_theme_icon(SNAME("MemberConstant"), SNAME("EditorIcons")));
+	search_properties->set_icon(results_tree->get_theme_icon(SNAME("MemberProperty"), SNAME("EditorIcons")));
+	search_theme_items->set_icon(results_tree->get_theme_icon(SNAME("MemberTheme"), SNAME("EditorIcons")));
+
 	case_sensitive_button->set_icon(results_tree->get_theme_icon(SNAME("MatchCase"), SNAME("EditorIcons")));
 	hierarchy_button->set_icon(results_tree->get_theme_icon(SNAME("ClassList"), SNAME("EditorIcons")));
 }
@@ -239,7 +248,7 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	}
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
-	filter_combo->select(4); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+	//filter_combo->select(4); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
 	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
@@ -269,7 +278,7 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	}
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
-	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+//	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
 	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
@@ -301,7 +310,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	}
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
-	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+//	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
 	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
@@ -331,7 +340,7 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 	}
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
-	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+//	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
 	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
@@ -361,7 +370,7 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	}
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
-	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+//	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
 	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
@@ -390,7 +399,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	}
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
-	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+//	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
 	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
@@ -418,7 +427,7 @@ void VisualScriptPropertySelector::select_from_visual_script(const String &p_bas
 	}
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
-	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
+//	filter_combo->select(0); //id0 = "Display All" //id2 = "Classes Only" //id3 = "Constructors Only" //id4 = "Methods Only"
 	//id5 = "Operators Only" //id6 = "Signals Only" //id7 = "Constants Only" //id8 = "Properties Only" //id9 = "Theme Properties Only"
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 	search_box->grab_focus();
@@ -443,7 +452,8 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 
 	// Create the search box and filter controls (at the top).
 	HBoxContainer *hbox = memnew(HBoxContainer);
-	vbox->add_margin_child(TTR("Search:"), hbox);
+	vbox->add_child(hbox);
+//	vbox->add_margin_child(TTR("Search:"), hbox);
 
 	search_box = memnew(LineEdit);
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
@@ -451,7 +461,8 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	search_box->connect("text_changed", callable_mp(this, &VisualScriptPropertySelector::_update_results_s));
 	search_box->connect("gui_input", callable_mp(this, &VisualScriptPropertySelector::_sbox_input));
 	register_text_enter(search_box);
-	hbox->add_child(search_box);
+	vbox->add_child(search_box);
+//	hbox->add_child(search_box);
 
 	case_sensitive_button = memnew(Button);
 	case_sensitive_button->set_flat(true);
@@ -470,21 +481,79 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hierarchy_button->set_focus_mode(Control::FOCUS_NONE);
 	hbox->add_child(hierarchy_button);
 
-	filter_combo = memnew(OptionButton);
-	filter_combo->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
-	filter_combo->set_stretch_ratio(0); // Fixed width.
-	filter_combo->add_item(TTR("Display All"), SEARCH_ALL);
-	filter_combo->add_separator();
-	filter_combo->add_item(TTR("Classes Only"), SEARCH_CLASSES);
-	filter_combo->add_item(TTR("Constructors Only"), SEARCH_CONSTRUCTORS);
-	filter_combo->add_item(TTR("Methods Only"), SEARCH_METHODS);
-	filter_combo->add_item(TTR("Operators Only"), SEARCH_OPERATORS);
-	filter_combo->add_item(TTR("Signals Only"), SEARCH_SIGNALS);
-	filter_combo->add_item(TTR("Constants Only"), SEARCH_CONSTANTS);
-	filter_combo->add_item(TTR("Properties Only"), SEARCH_PROPERTIES);
-	filter_combo->add_item(TTR("Theme Properties Only"), SEARCH_THEME_ITEMS);
-	filter_combo->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_update_results_i));
-	hbox->add_child(filter_combo);
+	search_classes = memnew(Button);
+	search_classes->set_flat(true);
+	search_classes->set_tooltip(TTR("Search Classes"));
+	search_classes->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
+	search_classes->set_toggle_mode(true);
+	search_classes->set_pressed(true);
+	search_classes->set_focus_mode(Control::FOCUS_NONE);
+	hbox->add_child(search_classes);
+
+	/*
+	search_constructors = memnew(Button);
+	search_constructors->set_flat(true);
+	search_constructors->set_tooltip(TTR("Search Constructors"));
+	search_constructors->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
+	search_constructors->set_toggle_mode(true);
+	search_constructors->set_pressed(true);
+	search_constructors->set_focus_mode(Control::FOCUS_NONE);
+	hbox->add_child(search_constructors);
+	*/
+
+	search_methods = memnew(Button);
+	search_methods->set_flat(true);
+	search_methods->set_tooltip(TTR("Search Methods"));
+	search_methods->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
+	search_methods->set_toggle_mode(true);
+	search_methods->set_pressed(true);
+	search_methods->set_focus_mode(Control::FOCUS_NONE);
+	hbox->add_child(search_methods);
+
+	search_operators = memnew(Button);
+	search_operators->set_flat(true);
+	search_operators->set_tooltip(TTR("Search Operators"));
+	search_operators->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
+	search_operators->set_toggle_mode(true);
+	search_operators->set_pressed(true);
+	search_operators->set_focus_mode(Control::FOCUS_NONE);
+	hbox->add_child(search_operators);
+
+	search_signals = memnew(Button);
+	search_signals->set_flat(true);
+	search_signals->set_tooltip(TTR("Search Signals"));
+	search_signals->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
+	search_signals->set_toggle_mode(true);
+	search_signals->set_pressed(true);
+	search_signals->set_focus_mode(Control::FOCUS_NONE);
+	hbox->add_child(search_signals);
+
+	search_constants = memnew(Button);
+	search_constants->set_flat(true);
+	search_constants->set_tooltip(TTR("Search Constants"));
+	search_constants->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
+	search_constants->set_toggle_mode(true);
+	search_constants->set_pressed(true);
+	search_constants->set_focus_mode(Control::FOCUS_NONE);
+	hbox->add_child(search_constants);
+
+	search_properties = memnew(Button);
+	search_properties->set_flat(true);
+	search_properties->set_tooltip(TTR("Search Properties"));
+	search_properties->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
+	search_properties->set_toggle_mode(true);
+	search_properties->set_pressed(true);
+	search_properties->set_focus_mode(Control::FOCUS_NONE);
+	hbox->add_child(search_properties);
+
+	search_theme_items = memnew(Button);
+	search_theme_items->set_flat(true);
+	search_theme_items->set_tooltip(TTR("Search Theme Items"));
+	search_theme_items->connect("pressed", callable_mp(this, &VisualScriptPropertySelector::_update_results));
+	search_theme_items->set_toggle_mode(true);
+	search_theme_items->set_pressed(true);
+	search_theme_items->set_focus_mode(Control::FOCUS_NONE);
+	hbox->add_child(search_theme_items);
 
 	scope_combo = memnew(OptionButton);
 	scope_combo->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
@@ -512,10 +581,12 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	results_tree->set_select_mode(Tree::SELECT_ROW);
 	results_tree->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
 	results_tree->connect("cell_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
-	vbox->add_margin_child(TTR("Matches:"), results_tree, true);
+	//vbox->add_margin_child(TTR("Matches:"), results_tree, true);
+	vbox->add_child(results_tree);
 
 	help_bit = memnew(EditorHelpBit);
-	vbox->add_margin_child(TTR("Description:"), help_bit);
+	//vbox->add_margin_child(TTR("Description:"), help_bit);
+	vbox->add_child(help_bit);
 	help_bit->connect("request_hide", callable_mp(this, &VisualScriptPropertySelector::_hide_requested));
 	get_ok_button()->set_text(TTR("Open"));
 	get_ok_button()->set_disabled(true);
@@ -632,7 +703,31 @@ bool VisualScriptPropertySelector::SearchRunner::_slice() {
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_init() {
-	search_flags = selector_ui->filter_combo->get_selected_id();
+	search_flags = 0;// selector_ui->filter_combo->get_selected_id();
+	if (selector_ui->search_classes->is_pressed()) {
+		search_flags |= SEARCH_CLASSES;
+	}
+//	if (selector_ui->search_constructors->is_pressed()) {
+	search_flags |= SEARCH_CONSTRUCTORS;
+//	}
+	if (selector_ui->search_methods->is_pressed()) {
+		search_flags |= SEARCH_METHODS;
+	}
+	if (selector_ui->search_operators->is_pressed()) {
+		search_flags |= SEARCH_OPERATORS;
+	}
+	if (selector_ui->search_signals->is_pressed()) {
+		search_flags |= SEARCH_SIGNALS;
+	}
+	if (selector_ui->search_constants->is_pressed()) {
+		search_flags |= SEARCH_CONSTANTS;
+	}
+	if (selector_ui->search_properties->is_pressed()) {
+		search_flags |= SEARCH_PROPERTIES;
+	}
+	if (selector_ui->search_theme_items->is_pressed()) {
+		search_flags |= SEARCH_THEME_ITEMS;
+	}
 	if (selector_ui->case_sensitive_button->is_pressed()) {
 		search_flags |= SEARCH_CASE_SENSITIVE;
 	}
@@ -640,6 +735,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_init() {
 		search_flags |= SEARCH_SHOW_HIERARCHY;
 	}
 	scope_flags = selector_ui->scope_combo->get_selected_id();
+
 	return true;
 }
 
