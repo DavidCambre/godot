@@ -48,6 +48,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 		SEARCH_CONSTANTS = 1 << 5,
 		SEARCH_PROPERTIES = 1 << 6,
 		SEARCH_THEME_ITEMS = 1 << 7,
+		SEARCH_VISUAL_SCRIPT_NODES = 1 << 8,
 		SEARCH_ALL = SEARCH_CLASSES | SEARCH_CONSTRUCTORS | SEARCH_METHODS | SEARCH_OPERATORS | SEARCH_SIGNALS | SEARCH_CONSTANTS | SEARCH_PROPERTIES | SEARCH_THEME_ITEMS,
 		SEARCH_CASE_SENSITIVE = 1 << 29,
 		SEARCH_SHOW_HIERARCHY = 1 << 30,
@@ -57,19 +58,20 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 		SCOPE_BASE = 1 << 0,
 		SCOPE_INHERITERS = 1 << 1,
 		SCOPE_UNRELATED = 1 << 2,
-		SCOPE_RELATED = SCOPE_BASE | SCOPE_INHERITERS
+		SCOPE_RELATED = SCOPE_BASE | SCOPE_INHERITERS,
+		SCOPE_ALL = SCOPE_BASE | SCOPE_INHERITERS | SCOPE_UNRELATED
 	};
 
 	LineEdit *search_box;
+	
 	Button *case_sensitive_button;
 	Button *hierarchy_button;
 
-	//	OptionButton *filter_combo;
-	//	int filter_combo = 0;
+	Button *search_visual_script_nodes;
 	Button *search_classes;
-	Button *search_constructors;
-	Button *search_methods;
 	Button *search_operators;
+
+	Button *search_methods;
 	Button *search_signals;
 	Button *search_constants;
 	Button *search_properties;
@@ -195,6 +197,8 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	bool _phase_select_match();
 
 	bool _match_string(const String &p_term, const String &p_string) const;
+	bool _match_visual_script(DocData::ClassDoc &class_doc);
+	bool _match_is_hidden(DocData::ClassDoc &class_doc);
 	void _match_item(TreeItem *p_item, const String &p_text);
 	void _add_class_doc(String class_name, String inherits, String category);
 	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);
