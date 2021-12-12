@@ -98,6 +98,8 @@ void VisualScriptPropertySelector::_confirmed() {
 	if (!ti) {
 		return;
 	}
+//	print_error(ti->get_metadata(0));
+//	print_error(ti->get_metadata(1));
 	emit_signal(SNAME("selected"), ti->get_metadata(0), ti->get_metadata(1), connecting);
 	set_visible(false);
 }
@@ -235,11 +237,7 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	set_title(TTR("Select method from base type"));
 	base_type = p_base;
 	base_script = "";
-	//	selected = p_current;
 	type = Variant::NIL;
-	//	properties = false;
-	//	instance = nullptr;
-	//	virtuals_only = p_virtuals_only;
 
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);
@@ -252,7 +250,11 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 
 	show_window(.5f);
 	if (clear_text) {
-		search_box->set_text("."); // show all methods
+		if (p_virtuals_only) {
+			search_box->set_text("._"); // show all _methods
+		} else {
+			search_box->set_text("."); // show all methods
+		}
 	} else {
 		search_box->select_all();
 	}
@@ -830,14 +832,21 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes() {
 		if (path[1] == "built_in") {
 			_add_class_doc(registerd_node_name, "functions", "built_in");
 		} else if (path[1] == "by_type") {
-			_add_class_doc(registerd_node_name, path[2], "by_type");
+			if (search_flags & SEARCH_CLASSES) {
+				_add_class_doc(registerd_node_name, path[2], "by_type_class");
+			}
 		} else if (path[1] == "constructors") {
-			_add_class_doc(registerd_node_name, path[2].substr(0, path[2].find_char('(')), "constructors");
+			if (search_flags & SEARCH_CLASSES) {
+				_add_class_doc(registerd_node_name, path[2].substr(0, path[2].find_char('(')), "constructors_class");
+			}
 		} else if (path[1] == "deconstruct") {
-			_add_class_doc(registerd_node_name, "functions", "deconstruct");
+			if (search_flags & SEARCH_CLASSES) {
+				_add_class_doc(registerd_node_name, "functions", "deconstruct_class");
+			}
 		} else if (path[1] == "wait") {
 			_add_class_doc(registerd_node_name, "functions", "yield");
 		} else {
+			//		print_error(registerd_node_name);
 			_add_class_doc(registerd_node_name, "functions", "");
 		}
 	} else if (path[0] == "index") {
@@ -900,8 +909,10 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 		if (search_flags & SEARCH_CLASSES || _match_visual_script(class_doc)) {
 			if (term == "") {
 				match.name = !_match_is_hidden(class_doc);
+			} else {
+				match.name = _match_string(term, class_doc.name);
 			}
-			match.name = match.name || _match_string(term, class_doc.name);
+			//	match.name = term == "" || _match_string(term, class_doc.name);
 		}
 
 		// Match members if the term is long enough.
@@ -1058,21 +1069,32 @@ bool VisualScriptPropertySelector::SearchRunner::_match_string(const String &p_t
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_match_visual_script(DocData::ClassDoc &class_doc) {
-	return class_doc.category.begins_with("VisualScript") && search_flags & SEARCH_VISUAL_SCRIPT_NODES;
+	if (class_doc.category.ends_with("_class")) {
+		if (class_doc.category.begins_with("VisualScript") && search_flags & SEARCH_CLASSES) {
+			if (matches.has(class_doc.inherits)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	if (class_doc.category.begins_with("VisualScript") && search_flags & SEARCH_VISUAL_SCRIPT_NODES) {
+		return true;
+	}
+	return false;
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_match_is_hidden(DocData::ClassDoc &class_doc) {
 	if (class_doc.category.begins_with("VisualScript")) {
 		if (class_doc.name.begins_with("flow_control")) {
 			return false;
-	//	} else if (class_doc.name.begins_with("functions")) {
-	//		return true;
-	//	} else if (class_doc.name.begins_with("data")) {
-	//		return true;
+			//	} else if (class_doc.name.begins_with("functions")) {
+			//		return true;
+			//	} else if (class_doc.name.begins_with("data")) {
+			//		return true;
 		} else if (class_doc.name.begins_with("operators")) {
 			return !(search_flags & SEARCH_OPERATORS);
 		}
-		print_error(class_doc.name);
+		//	print_error(class_doc.name);
 		return true;
 	}
 	return false;
