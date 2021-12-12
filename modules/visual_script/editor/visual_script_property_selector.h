@@ -63,7 +63,7 @@ class VisualScriptPropertySelector : public ConfirmationDialog {
 	};
 
 	LineEdit *search_box;
-	
+
 	Button *case_sensitive_button;
 	Button *hierarchy_button;
 

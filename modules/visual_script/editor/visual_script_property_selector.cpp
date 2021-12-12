@@ -98,8 +98,8 @@ void VisualScriptPropertySelector::_confirmed() {
 	if (!ti) {
 		return;
 	}
-//	print_error(ti->get_metadata(0));
-//	print_error(ti->get_metadata(1));
+	//	print_error(ti->get_metadata(0));
+	//	print_error(ti->get_metadata(1));
 	emit_signal(SNAME("selected"), ti->get_metadata(0), ti->get_metadata(1), connecting);
 	set_visible(false);
 }
@@ -502,10 +502,9 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	vbox = memnew(VBoxContainer);
 	add_child(vbox);
 
-	// Create the search box and filter controls (at the top).
 	HBoxContainer *hbox = memnew(HBoxContainer);
+	hbox->set_alignment(hbox->ALIGN_CENTER);
 	vbox->add_child(hbox);
-	//	hbox->add_child(search_box);
 
 	case_sensitive_button = memnew(Button);
 	case_sensitive_button->set_flat(true);
@@ -635,11 +634,9 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	results_tree->set_select_mode(Tree::SELECT_ROW);
 	results_tree->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
 	results_tree->connect("cell_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
-	//vbox->add_margin_child(TTR("Matches:"), results_tree, true);
 	vbox->add_child(results_tree);
 
 	help_bit = memnew(EditorHelpBit);
-	//vbox->add_margin_child(TTR("Description:"), help_bit);
 	vbox->add_child(help_bit);
 	help_bit->connect("request_hide", callable_mp(this, &VisualScriptPropertySelector::_hide_requested));
 	get_ok_button()->set_text(TTR("Open"));
