@@ -233,22 +233,12 @@ void VisualScriptPropertySelector::_notification(int p_what) {
 	}
 }
 
-void VisualScriptPropertySelector::select_method_from_base_type(const String &p_base, const String &p_current, const bool p_virtuals_only, const bool p_connecting, bool clear_text) {
+void VisualScriptPropertySelector::select_method_from_base_type(const String &p_base, const bool p_virtuals_only, const bool p_connecting, bool clear_text) {
 	set_title(TTR("Select method from base type"));
 	base_type = p_base;
 	base_script = "";
 	type = Variant::NIL;
-
-	search_visual_script_nodes->set_pressed(false);
-	search_classes->set_pressed(false);
-	search_methods->set_pressed(true);
-	search_operators->set_pressed(false);
-	search_signals->set_pressed(false);
-	search_constants->set_pressed(false);
-	search_properties->set_pressed(false);
-	search_theme_items->set_pressed(false);
-
-	show_window(.5f);
+	connecting = p_connecting;
 	if (clear_text) {
 		if (p_virtuals_only) {
 			search_box->set_text("._"); // show all _methods
@@ -258,139 +248,147 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	} else {
 		search_box->select_all();
 	}
+
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
+
+	search_visual_script_nodes->set_pressed(false);
+	search_classes->set_pressed(false);
+	search_methods->set_pressed(true);
+	search_operators->set_pressed(false);
+	search_signals->set_pressed(false);
+	search_constants->set_pressed(false);
+	search_properties->set_pressed(false);
+	search_theme_items->set_pressed(false);
+	
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
+
+	show_window(.5f);
 	search_box->grab_focus();
-	connecting = p_connecting;
 
 	_update_results();
 }
 
-void VisualScriptPropertySelector::select_from_base_type(const String &p_base, const String &p_current, bool p_virtuals_only, bool p_seq_connect, const bool p_connecting, bool clear_text) {
+void VisualScriptPropertySelector::select_from_base_type(const String &p_base, const String &p_base_script, bool p_virtuals_only, const bool p_connecting, bool clear_text) {
 	set_title(TTR("Select from base type"));
-	// needs to get nodes base script. to give beter hints
-	// needs hint to contiunue instace refrence
 	base_type = p_base;
-	base_script = "";
-	//	selected = p_current;
+	base_script = p_base_script;
 	type = Variant::NIL;
-	//	properties = true;
-	//	visual_script_generic = false;
-	//	instance = nullptr;
-	//	virtuals_only = p_virtuals_only;
-
-	search_visual_script_nodes->set_pressed(false);
-	search_classes->set_pressed(true);
-	search_methods->set_pressed(true);
-	search_operators->set_pressed(true);
-	search_signals->set_pressed(true);
-	search_constants->set_pressed(true);
-	search_properties->set_pressed(true);
-	search_theme_items->set_pressed(true);
-
-	show_window(.5f);
+	connecting = p_connecting;
+	
 	if (clear_text) {
-		search_box->set_text("");
+		if (p_virtuals_only) {
+			search_box->set_text("_");
+		} else {
+			search_box->set_text("");
+		}
 	} else {
 		search_box->select_all();
 	}
+
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
-	search_box->grab_focus();
-	seq_connect = p_seq_connect;
-	connecting = p_connecting;
-
-	_update_results();
-}
-
-void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_script, const String &p_current, const bool p_connecting, bool clear_text) {
-	set_title(TTR("Select from script"));
-	ERR_FAIL_COND(p_script.is_null());
-
-	base_type = p_script->get_instance_base_type();
-	//	base_script = p_script->get_path();
-	selected = p_current;
-	type = Variant::NIL;
-	script = p_script->get_instance_id();
-	//	properties = true;
-	//	visual_script_generic = false;
-	//	instance = nullptr;
-	//	virtuals_only = false;
-
-	search_visual_script_nodes->set_pressed(false);
-	search_classes->set_pressed(true);
-	search_methods->set_pressed(true);
-	search_operators->set_pressed(true);
-	search_signals->set_pressed(true);
-	search_constants->set_pressed(true);
-	search_properties->set_pressed(true);
-	search_theme_items->set_pressed(true);
-
-	show_window(.5f);
-	if (clear_text) {
-		search_box->set_text("");
-	} else {
-		search_box->select_all();
-	}
-	case_sensitive_button->set_pressed(false);
-	hierarchy_button->set_pressed(true);
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
-	search_box->grab_focus();
-	seq_connect = false;
-	connecting = p_connecting;
-
-	_update_results();
-}
-
-void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, const String &p_current, const bool p_connecting, bool clear_text) {
-	set_title(TTR("Select from basic type"));
-	ERR_FAIL_COND(p_type == Variant::NIL);
-	base_type = Variant::get_type_name(p_type);
-	base_script = "";
-	//	selected = p_current;
-	type = p_type;
-	//	properties = true;
-	//	visual_script_generic = false;
-	//	instance = nullptr;
-	//	virtuals_only = false;
 
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);
 	search_methods->set_pressed(true);
 	search_operators->set_pressed(false);
 	search_signals->set_pressed(true);
+	search_constants->set_pressed(false);
+	search_properties->set_pressed(true);
+	search_theme_items->set_pressed(true);
+
+	// When class is Input only show inheritors
+	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
+
+	show_window(.5f);
+	search_box->grab_focus();
+	_update_results();
+}
+
+void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_script, const bool p_connecting, bool clear_text) {
+	set_title(TTR("Select from script"));
+	ERR_FAIL_COND(p_script.is_null());
+
+	base_type = p_script->get_instance_base_type();
+	base_script = p_script->get_path(); // or ""
+	type = Variant::NIL;
+	script = p_script->get_instance_id();
+	connecting = p_connecting;
+
+	if (clear_text) {
+		search_box->set_text("");
+	} else {
+		search_box->select_all();
+	}
+
+	case_sensitive_button->set_pressed(false);
+	hierarchy_button->set_pressed(true);
+
+	search_visual_script_nodes->set_pressed(false);
+	search_classes->set_pressed(true);
+	search_methods->set_pressed(true);
+	search_operators->set_pressed(true);
+	search_signals->set_pressed(true);
 	search_constants->set_pressed(true);
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(true);
 
+	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
+
 	show_window(.5f);
+	search_box->grab_focus();
+	_update_results();
+}
+
+void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, const bool p_connecting, bool clear_text) {
+	set_title(TTR("Select from basic type"));
+	ERR_FAIL_COND(p_type == Variant::NIL);
+	base_type = Variant::get_type_name(p_type);
+	base_script = "";
+	type = p_type;
+	connecting = p_connecting;
+	
 	if (clear_text) {
 		search_box->set_text(".");
 	} else {
 		search_box->select_all();
 	}
+
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
+
+	search_visual_script_nodes->set_pressed(false);
+	search_classes->set_pressed(false);
+	search_methods->set_pressed(true);
+	search_operators->set_pressed(false);
+	search_signals->set_pressed(false);
+	search_constants->set_pressed(true);
+	search_properties->set_pressed(true);
+	search_theme_items->set_pressed(false);
+
+	show_window(.5f);
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 	search_box->grab_focus();
-	seq_connect = false;
-	connecting = p_connecting;
 
 	_update_results();
 }
 
-void VisualScriptPropertySelector::select_from_action(const String &p_type, const String &p_current, const bool p_connecting, bool clear_text) {
+void VisualScriptPropertySelector::select_from_action(const String &p_type, const bool p_connecting, bool clear_text) {
 	set_title(TTR("Select from action"));
 	base_type = p_type;
 	base_script = "";
-	//	selected = p_current;
 	type = Variant::NIL;
-	//	properties = false;
-	//	visual_script_generic = false;
-	//	instance = nullptr;
-	//	virtuals_only = false;
+	connecting = p_connecting;
+
+	if (clear_text) {
+		search_box->set_text("");
+	} else {
+		search_box->select_all();
+	}
+	
+	case_sensitive_button->set_pressed(false);
+	hierarchy_button->set_pressed(true);
 
 	search_visual_script_nodes->set_pressed(true);
 	search_classes->set_pressed(false);
@@ -400,33 +398,30 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	search_constants->set_pressed(false);
 	search_properties->set_pressed(false);
 	search_theme_items->set_pressed(false);
+	
+	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
 	show_window(.5f);
+	search_box->grab_focus();
+	_update_results();
+}
+
+void VisualScriptPropertySelector::select_from_instance(Object *p_instance, const Ref<Script> &p_script, const bool p_connecting, const String &p_basetype, bool clear_text) {
+	set_title(TTR("Select from instance"));
+	base_type = p_basetype;
+	base_script = p_script->get_path();
+	type = Variant::NIL;
+	connecting = p_connecting;
+	//	instance = p_instance;
+
 	if (clear_text) {
 		search_box->set_text("");
 	} else {
 		search_box->select_all();
 	}
+
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
-	search_box->grab_focus();
-	seq_connect = true;
-	connecting = p_connecting;
-
-	_update_results();
-}
-
-void VisualScriptPropertySelector::select_from_instance(Object *p_instance, const String &p_current, const bool p_connecting, const String &p_basetype, bool clear_text) {
-	set_title(TTR("Select from instance"));
-	base_type = p_basetype;
-	base_script = "";
-	//	selected = p_current;
-	type = Variant::NIL;
-	//	properties = true;
-	//	visual_script_generic = false;
-	//	instance = p_instance;
-	//	virtuals_only = false;
 
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);
@@ -436,33 +431,28 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	search_constants->set_pressed(true);
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(true);
+	
+	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
 	show_window(.5f);
+	search_box->grab_focus();
+	_update_results();
+}
+
+void VisualScriptPropertySelector::select_from_visual_script(const String &p_base, bool clear_text) {
+	set_title(TTR("Select from visual script"));
+	base_type = p_base;
+	base_script = "";
+	type = Variant::NIL;
+
 	if (clear_text) {
 		search_box->set_text("");
 	} else {
 		search_box->select_all();
 	}
+	
 	case_sensitive_button->set_pressed(false);
 	hierarchy_button->set_pressed(true);
-	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
-	search_box->grab_focus();
-	seq_connect = false;
-	connecting = p_connecting;
-
-	_update_results();
-}
-
-void VisualScriptPropertySelector::select_from_visual_script(const String &p_base, const bool p_connecting, bool clear_text) {
-	set_title(TTR("Select from visual script"));
-	base_type = p_base;
-	base_script = "";
-	//	selected = "";
-	type = Variant::NIL;
-	//	properties = true;
-	//	visual_script_generic = true;
-	//	instance = nullptr;
-	//	virtuals_only = false;
 
 	search_visual_script_nodes->set_pressed(true);
 	search_classes->set_pressed(false);
@@ -472,18 +462,11 @@ void VisualScriptPropertySelector::select_from_visual_script(const String &p_bas
 	search_constants->set_pressed(true);
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(true);
+	
+	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
 	show_window(.5f);
-	if (clear_text) {
-		search_box->set_text("");
-	} else {
-		search_box->select_all();
-	}
-	case_sensitive_button->set_pressed(false);
-	hierarchy_button->set_pressed(true);
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 	search_box->grab_focus();
-	connecting = p_connecting;
 	_update_results();
 }
 
@@ -497,7 +480,6 @@ void VisualScriptPropertySelector::_bind_methods() {
 
 VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	virtuals_only = false;
-	seq_connect = false;
 
 	vbox = memnew(VBoxContainer);
 	add_child(vbox);

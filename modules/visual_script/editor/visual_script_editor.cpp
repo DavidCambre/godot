@@ -1442,7 +1442,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 			if (p_button == 1) {
 				// Ensure script base exists otherwise use custom base type.
 				ERR_FAIL_COND(script.is_null());
-				new_virtual_method_select->select_method_from_base_type(script->get_instance_base_type(), String(), true);
+				new_virtual_method_select->select_method_from_base_type(script->get_instance_base_type(), true);
 				return;
 			} else if (p_button == 0) {
 				String name = _validate_name("new_function");
@@ -1955,7 +1955,7 @@ void VisualScriptEditor::_generic_search(String p_base_type, Vector2 pos, bool n
 		port_action_pos = graph->get_viewport()->get_mouse_position() - graph->get_global_position();
 	}
 
-	new_connect_node_select->select_from_visual_script(p_base_type, false, false); // neither connecting nor reset text
+	new_connect_node_select->select_from_visual_script(p_base_type, false); // do not reset text
 
 	// Ensure that the dialog fits inside the graph.
 	Size2 bounds = graph->get_global_position() + graph->get_size() - new_connect_node_select->get_size();
@@ -2428,7 +2428,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			drop_position = pos;
 			drop_node = node;
 			drop_path = sn->get_path_to(node);
-			new_connect_node_select->select_from_instance(node, "", false, node->get_class());
+			new_connect_node_select->select_from_instance(node, node->get_script(), false, node->get_class());
 		}
 		undo_redo->add_do_method(this, "_update_graph");
 		undo_redo->add_undo_method(this, "_update_graph");
@@ -3207,19 +3207,34 @@ void VisualScriptEditor::_port_action_menu(int p_option) {
 				n->set_base_type("Object");
 			}
 			String type_string;
+			String base_script = "";
 			if (script->get_node(port_action_node)->get_output_value_port_count() > 0) {
 				type_string = script->get_node(port_action_node)->get_output_value_port_info(port_action_output).hint_string;
+				VisualScriptFunctionCall *vsfc = Object::cast_to<VisualScriptFunctionCall>(*script->get_node(port_action_node));
+				if (vsfc) {
+					base_script = vsfc->get_base_script();
+				} else {
+					VisualScriptPropertyGet *vspg = Object::cast_to<VisualScriptPropertyGet>(*script->get_node(port_action_node));
+					if (vspg) {
+						base_script = vspg->get_base_script();
+					} else {
+						VisualScriptPropertySet *vsps = Object::cast_to<VisualScriptPropertySet>(*script->get_node(port_action_node));
+						if (vsps) {
+							base_script = vsps->get_base_script();
+						}
+					}
+				}
 			}
 			if (tg.type == Variant::OBJECT) {
 				if (tg.script.is_valid()) {
-					new_connect_node_select->select_from_script(tg.script, "");
-				} else if (!type_string.is_empty()) {
-					new_connect_node_select->select_from_base_type(type_string);
+					new_connect_node_select->select_from_script(tg.script);
+				} else if (type_string != String()) {
+					new_connect_node_select->select_from_base_type(type_string, base_script);
 				} else {
-					new_connect_node_select->select_from_base_type(n->get_base_type());
+					new_connect_node_select->select_from_base_type(n->get_base_type(), base_script);
 				}
 			} else if (tg.type == Variant::NIL) {
-				new_connect_node_select->select_from_base_type("");
+				new_connect_node_select->select_from_base_type("", base_script);
 			} else {
 				new_connect_node_select->select_from_basic_type(tg.type);
 			}
