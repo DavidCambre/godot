@@ -574,7 +574,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hbox->add_child(scope_combo);
 
 	search_box = memnew(LineEdit);
-	search_box->set_tooltip(TTR("Enter \" \" to show all filterd options\nEnter \".\" to show all filterd methods, operators and constructors\nUse CTRL_KEY to drop preperty setters" ));
+	search_box->set_tooltip(TTR("Enter \" \" to show all filterd options\nEnter \".\" to show all filterd methods, operators and constructors\nUse CTRL_KEY to drop preperty setters"));
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect("text_changed", callable_mp(this, &VisualScriptPropertySelector::_update_results_s));
@@ -620,6 +620,8 @@ bool VisualScriptPropertySelector::SearchRunner::_is_class_disabled_by_feature_p
 		}
 
 		if (profile->is_class_disabled(class_name)) {
+			print_error("*************************************");
+			print_error(class_name);
 			return true;
 		}
 		class_name = ClassDB::get_parent_class(class_name);
@@ -965,7 +967,12 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_class_items_init() {
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_class_items() {
+	if (!iterator_match) {
+		return true;
+	}
+
 	ClassMatch &match = iterator_match->value();
+
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
 		if (match.required()) {
 			_create_class_hierarchy(match);
@@ -987,6 +994,10 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_member_items_init() {
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_member_items() {
+	if (!iterator_match) {
+		return true;
+	}
+	
 	ClassMatch &match = iterator_match->value();
 
 	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;

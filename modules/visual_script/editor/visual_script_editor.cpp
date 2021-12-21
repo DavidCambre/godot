@@ -3297,67 +3297,43 @@ void VisualScriptEditor::connect_data(Ref<VisualScriptNode> vnode_old, Ref<Visua
 }
 
 void VisualScriptEditor::_selected_connect_node(const String &p_text, const String &p_category, const bool p_connecting) {
-	print_error("------------------------------------------------------");
+	print_error("-------------------------");
 	print_error(p_text);
 	print_error(p_category);
+
 	Vector2 pos = _get_pos_in_graph(port_action_pos);
 
 	Set<int> vn;
+	bool port_node_exists = true;
 
 	if (drop_position != Vector2()) {
 		pos = drop_position;
 	}
 	drop_position = Vector2();
 
-	bool port_node_exists = true;
-	if (p_category.begins_with("VisualScriptNode")) {
-		Ref<VisualScriptNode> vnode_new = VisualScriptLanguage::singleton->create_node_from_name(p_text);
-		Ref<VisualScriptNode> vnode_old;
-		if (port_node_exists && p_connecting) {
-			vnode_old = script->get_node(port_action_node);
-		}
-		int new_id = script->get_available_id();
-
-		if (Object::cast_to<VisualScriptOperator>(vnode_new.ptr()) && vnode_old.is_valid()) {
-			Variant::Type type = vnode_old->get_output_value_port_info(port_action_output).type;
-			Object::cast_to<VisualScriptOperator>(vnode_new.ptr())->set_typed(type);
-		}
-
-		if (Object::cast_to<VisualScriptTypeCast>(vnode_new.ptr()) && vnode_old.is_valid()) {
-			Variant::Type type = vnode_old->get_output_value_port_info(port_action_output).type;
-			String hint_name = vnode_old->get_output_value_port_info(port_action_output).hint_string;
-			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! IS THERE NO WORK AROUND ??
-			// "VisualScriptCustomNode"
-			// "VisualScriptNode"
-
-			if (type == Variant::OBJECT) {
-				Object::cast_to<VisualScriptTypeCast>(vnode_new.ptr())->set_base_type(hint_name);
-			} else if (type == Variant::NIL) {
-				Object::cast_to<VisualScriptTypeCast>(vnode_new.ptr())->set_base_type("");
-			} else {
-				Object::cast_to<VisualScriptTypeCast>(vnode_new.ptr())->set_base_type(Variant::get_type_name(type));
-			}
-			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		}
-
-		undo_redo->create_action(TTR("Add Node"));
-		undo_redo->add_do_method(script.ptr(), "add_node", new_id, vnode_new, pos);
-		if (vnode_old.is_valid() && p_connecting) {
-			connect_seq(vnode_old, vnode_new, new_id);
-			connect_data(vnode_old, vnode_new, new_id);
-		}
-
-		undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
-		undo_redo->add_do_method(this, "_update_graph");
-		undo_redo->add_undo_method(this, "_update_graph");
-		undo_redo->commit_action();
-		return;
+	Ref<VisualScriptNode> vnode;
+	Ref<VisualScriptNode> vnode_old;
+	if (port_node_exists && p_connecting) {
+		vnode_old = script->get_node(port_action_node);
 	}
 
-	Ref<VisualScriptNode> vnode;
-	//	if (p_category.begins_with("class_")) {
-	//		print_error(p_category);
-	//	}
+	if (p_category.begins_with("VisualScriptNode")) {
+		Ref<VisualScriptNode> n = VisualScriptLanguage::singleton->create_node_from_name(p_text);
+
+		if (Object::cast_to<VisualScriptTypeCast>(n.ptr()) && vnode_old.is_valid()) {
+			Variant::Type type = vnode_old->get_output_value_port_info(port_action_output).type;
+			String hint_name = vnode_old->get_output_value_port_info(port_action_output).hint_string;
+
+			if (type == Variant::OBJECT) {
+				Object::cast_to<VisualScriptTypeCast>(n.ptr())->set_base_type(hint_name);
+			} else if (type == Variant::NIL) {
+				Object::cast_to<VisualScriptTypeCast>(n.ptr())->set_base_type("");
+			} else {
+				Object::cast_to<VisualScriptTypeCast>(n.ptr())->set_base_type(Variant::get_type_name(type));
+			}
+		}
+		vnode = n;
+	}
 
 	if (p_category == String("class_method")) {
 		Ref<VisualScriptFunctionCall> n;
@@ -3423,38 +3399,12 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			}
 			vnode = n;
 		}
+	} else {
+		print_error("Category not handled: \"" + p_category);
 	}
+
 	drop_path = String();
 	drop_node = nullptr;
-
-	if (p_category == String("action")) {
-		if (p_text == "VisualScriptCondition") {
-			Ref<VisualScriptCondition> n;
-			n.instantiate();
-			vnode = n;
-		}
-		if (p_text == "VisualScriptSwitch") {
-			Ref<VisualScriptSwitch> n;
-			n.instantiate();
-			vnode = n;
-		} else if (p_text == "VisualScriptSequence") {
-			Ref<VisualScriptSequence> n;
-			n.instantiate();
-			vnode = n;
-		} else if (p_text == "VisualScriptIterator") {
-			Ref<VisualScriptIterator> n;
-			n.instantiate();
-			vnode = n;
-		} else if (p_text == "VisualScriptWhile") {
-			Ref<VisualScriptWhile> n;
-			n.instantiate();
-			vnode = n;
-		} else if (p_text == "VisualScriptReturn") {
-			Ref<VisualScriptReturn> n;
-			n.instantiate();
-			vnode = n;
-		}
-	}
 
 	int new_id = script->get_available_id();
 	undo_redo->create_action(TTR("Add Node"));
@@ -3578,6 +3528,27 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		if (vnode_old.is_valid() && p_connecting) {
 			connect_seq(vnode_old, vnode, port_action_new_node);
 			connect_data(vnode_old, vnode, port_action_new_node);
+		}
+
+		String base_script = "";
+		if (Object::cast_to<VisualScriptTypeCast>(vnode_old.ptr())) {
+			base_script = Object::cast_to<VisualScriptTypeCast>(vnode_old.ptr())->get_base_script();
+		} else if (Object::cast_to<VisualScriptFunctionCall>(vnode_old.ptr())) {
+			base_script = Object::cast_to<VisualScriptFunctionCall>(vnode_old.ptr())->get_base_script();
+		} else if (Object::cast_to<VisualScriptPropertySet>(vnode_old.ptr())) {
+			base_script = Object::cast_to<VisualScriptPropertySet>(vnode_old.ptr())->get_base_script();
+		} else if (Object::cast_to<VisualScriptPropertyGet>(vnode_old.ptr())) {
+			base_script = Object::cast_to<VisualScriptPropertyGet>(vnode_old.ptr())->get_base_script();
+		}
+
+		if (Object::cast_to<VisualScriptTypeCast>(vnode.ptr())) {
+			Object::cast_to<VisualScriptTypeCast>(vnode.ptr())->set_base_script(base_script);
+		} else if (Object::cast_to<VisualScriptFunctionCall>(vnode.ptr())) {
+			Object::cast_to<VisualScriptFunctionCall>(vnode.ptr())->set_base_script(base_script);
+		} else if (Object::cast_to<VisualScriptPropertySet>(vnode.ptr())) {
+			Object::cast_to<VisualScriptPropertySet>(vnode.ptr())->set_base_script(base_script);
+		} else if (Object::cast_to<VisualScriptPropertyGet>(vnode.ptr())) {
+			Object::cast_to<VisualScriptPropertyGet>(vnode.ptr())->set_base_script(base_script);
 		}
 	}
 	_update_graph(port_action_new_node);
