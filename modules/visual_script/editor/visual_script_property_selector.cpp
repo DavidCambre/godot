@@ -574,7 +574,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hbox->add_child(scope_combo);
 
 	search_box = memnew(LineEdit);
-	search_box->set_tooltip(TTR("Enter \" \" to show all filterd options \nEnter \".\" to show all filterd methods, operators and constructors" ));
+	search_box->set_tooltip(TTR("Enter \" \" to show all filterd options\nEnter \".\" to show all filterd methods, operators and constructors\nUse CTRL_KEY to drop preperty setters" ));
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect("text_changed", callable_mp(this, &VisualScriptPropertySelector::_update_results_s));
