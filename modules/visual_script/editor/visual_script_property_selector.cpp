@@ -249,9 +249,6 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 		search_box->select_all();
 	}
 
-	case_sensitive_button->set_pressed(false);
-	hierarchy_button->set_pressed(true);
-
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);
 	search_methods->set_pressed(true);
@@ -260,7 +257,7 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	search_constants->set_pressed(false);
 	search_properties->set_pressed(false);
 	search_theme_items->set_pressed(false);
-	
+
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 
 	show_window(.5f);
@@ -275,7 +272,7 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	base_script = p_base_script;
 	type = Variant::NIL;
 	connecting = p_connecting;
-	
+
 	if (clear_text) {
 		if (p_virtuals_only) {
 			search_box->set_text("_");
@@ -285,9 +282,6 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	} else {
 		search_box->select_all();
 	}
-
-	case_sensitive_button->set_pressed(false);
-	hierarchy_button->set_pressed(true);
 
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);
@@ -322,9 +316,6 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 		search_box->select_all();
 	}
 
-	case_sensitive_button->set_pressed(false);
-	hierarchy_button->set_pressed(true);
-
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(true);
 	search_methods->set_pressed(true);
@@ -348,15 +339,12 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 	base_script = "";
 	type = p_type;
 	connecting = p_connecting;
-	
+
 	if (clear_text) {
 		search_box->set_text(".");
 	} else {
 		search_box->select_all();
 	}
-
-	case_sensitive_button->set_pressed(false);
-	hierarchy_button->set_pressed(true);
 
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);
@@ -386,9 +374,6 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	} else {
 		search_box->select_all();
 	}
-	
-	case_sensitive_button->set_pressed(false);
-	hierarchy_button->set_pressed(true);
 
 	search_visual_script_nodes->set_pressed(true);
 	search_classes->set_pressed(false);
@@ -398,7 +383,7 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	search_constants->set_pressed(false);
 	search_properties->set_pressed(false);
 	search_theme_items->set_pressed(false);
-	
+
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
 	show_window(.5f);
@@ -420,9 +405,6 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 		search_box->select_all();
 	}
 
-	case_sensitive_button->set_pressed(false);
-	hierarchy_button->set_pressed(true);
-
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);
 	search_methods->set_pressed(true);
@@ -431,7 +413,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	search_constants->set_pressed(true);
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(true);
-	
+
 	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
 	show_window(.5f);
@@ -446,13 +428,10 @@ void VisualScriptPropertySelector::select_from_visual_script(const String &p_bas
 	type = Variant::NIL;
 
 	if (clear_text) {
-		search_box->set_text("");
+		search_box->set_text(" ");
 	} else {
 		search_box->select_all();
 	}
-	
-	case_sensitive_button->set_pressed(false);
-	hierarchy_button->set_pressed(true);
 
 	search_visual_script_nodes->set_pressed(true);
 	search_classes->set_pressed(false);
@@ -462,7 +441,7 @@ void VisualScriptPropertySelector::select_from_visual_script(const String &p_bas
 	search_constants->set_pressed(true);
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(true);
-	
+
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
 	show_window(.5f);
@@ -583,6 +562,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 
 	scope_combo = memnew(OptionButton);
 	scope_combo->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
+	scope_combo->set_tooltip(TTR("Select the search limits"));
 	scope_combo->set_stretch_ratio(0); // Fixed width.
 	scope_combo->add_item(TTR("Search Related"), SCOPE_RELATED);
 	scope_combo->add_separator();
@@ -594,6 +574,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hbox->add_child(scope_combo);
 
 	search_box = memnew(LineEdit);
+	search_box->set_tooltip(TTR("Enter \" \" to show all filterd options \nEnter \".\" to show all filterd methods, operators and constructors" ));
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect("text_changed", callable_mp(this, &VisualScriptPropertySelector::_update_results_s));
@@ -900,6 +881,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 				for (int i = 0; i < class_doc.constructors.size(); i++) {
 					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.constructors[i].name : class_doc.constructors[i].name.to_lower();
 					if (method_name.find(term) > -1 ||
+							term == " " ||
 							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
 							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
@@ -911,6 +893,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 				for (int i = 0; i < class_doc.methods.size(); i++) {
 					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
 					if (method_name.find(term) > -1 ||
+							term == " " ||
 							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
 							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
@@ -922,6 +905,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 				for (int i = 0; i < class_doc.operators.size(); i++) {
 					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.operators[i].name : class_doc.operators[i].name.to_lower();
 					if (method_name.find(term) > -1 ||
+							term == " " ||
 							(term.begins_with(".") && method_name.begins_with(term.substr(1))) ||
 							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
 							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges())) {
@@ -931,28 +915,34 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 			}
 			if (search_flags & SEARCH_SIGNALS) {
 				for (int i = 0; i < class_doc.signals.size(); i++) {
-					if (_match_string(term, class_doc.signals[i].name)) {
+					if (_match_string(term, class_doc.signals[i].name) ||
+							term == " ") {
 						match.signals.push_back(const_cast<DocData::MethodDoc *>(&class_doc.signals[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_CONSTANTS) {
 				for (int i = 0; i < class_doc.constants.size(); i++) {
-					if (_match_string(term, class_doc.constants[i].name)) {
+					if (_match_string(term, class_doc.constants[i].name) ||
+							term == " ") {
 						match.constants.push_back(const_cast<DocData::ConstantDoc *>(&class_doc.constants[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_PROPERTIES) {
 				for (int i = 0; i < class_doc.properties.size(); i++) {
-					if (_match_string(term, class_doc.properties[i].name) || _match_string(term, class_doc.properties[i].getter) || _match_string(term, class_doc.properties[i].setter)) {
+					if (_match_string(term, class_doc.properties[i].name) ||
+							term == " " ||
+							_match_string(term, class_doc.properties[i].getter) ||
+							_match_string(term, class_doc.properties[i].setter)) {
 						match.properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.properties[i]));
 					}
 				}
 			}
 			if (search_flags & SEARCH_THEME_ITEMS) {
 				for (int i = 0; i < class_doc.theme_properties.size(); i++) {
-					if (_match_string(term, class_doc.theme_properties[i].name)) {
+					if (_match_string(term, class_doc.theme_properties[i].name) ||
+							term == " ") {
 						match.theme_properties.push_back(const_cast<DocData::ThemeItemDoc *>(&class_doc.theme_properties[i]));
 					}
 				}
