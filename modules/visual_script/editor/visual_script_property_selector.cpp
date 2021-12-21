@@ -620,8 +620,6 @@ bool VisualScriptPropertySelector::SearchRunner::_is_class_disabled_by_feature_p
 		}
 
 		if (profile->is_class_disabled(class_name)) {
-			print_error("*************************************");
-			print_error(class_name);
 			return true;
 		}
 		class_name = ClassDB::get_parent_class(class_name);
@@ -719,6 +717,8 @@ bool VisualScriptPropertySelector::SearchRunner::_slice() {
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_init() {
+	results_tree->clear();
+
 	search_flags = 0; // selector_ui->filter_combo->get_selected_id();
 	if (selector_ui->search_visual_script_nodes->is_pressed()) {
 		search_flags |= SEARCH_VISUAL_SCRIPT_NODES;
@@ -959,7 +959,6 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 bool VisualScriptPropertySelector::SearchRunner::_phase_class_items_init() {
 	iterator_match = matches.front();
 
-	results_tree->clear();
 	root_item = results_tree->create_item();
 	class_items.clear();
 
@@ -997,7 +996,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_member_items() {
 	if (!iterator_match) {
 		return true;
 	}
-	
+
 	ClassMatch &match = iterator_match->value();
 
 	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
