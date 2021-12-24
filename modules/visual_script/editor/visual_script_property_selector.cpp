@@ -260,6 +260,7 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 
+	results_tree->clear();
 	show_window(.5f);
 	search_box->grab_focus();
 
@@ -295,6 +296,7 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	// When class is Input only show inheritors
 	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 
+	results_tree->clear();
 	show_window(.5f);
 	search_box->grab_focus();
 	_update_results();
@@ -327,6 +329,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 
+	results_tree->clear();
 	show_window(.5f);
 	search_box->grab_focus();
 	_update_results();
@@ -355,8 +358,10 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	show_window(.5f);
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
+
+	results_tree->clear();
+	show_window(.5f);
 	search_box->grab_focus();
 
 	_update_results();
@@ -386,6 +391,7 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
+	results_tree->clear();
 	show_window(.5f);
 	search_box->grab_focus();
 	_update_results();
@@ -415,6 +421,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 
 	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
+	results_tree->clear();
 	show_window(.5f);
 	search_box->grab_focus();
 	_update_results();
@@ -443,6 +450,7 @@ void VisualScriptPropertySelector::select_from_visual_script(const String &p_bas
 
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
+	results_tree->clear();
 	show_window(.5f);
 	search_box->grab_focus();
 	_update_results();
@@ -716,8 +724,6 @@ bool VisualScriptPropertySelector::SearchRunner::_slice() {
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_init() {
-	results_tree->clear();
-
 	search_flags = 0; // selector_ui->filter_combo->get_selected_id();
 	if (selector_ui->search_visual_script_nodes->is_pressed()) {
 		search_flags |= SEARCH_VISUAL_SCRIPT_NODES;
@@ -956,6 +962,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes() {
 }
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_class_items_init() {
+	results_tree->clear();
 	iterator_match = matches.front();
 
 	root_item = results_tree->create_item();
