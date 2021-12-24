@@ -3297,10 +3297,15 @@ void VisualScriptEditor::connect_data(Ref<VisualScriptNode> vnode_old, Ref<Visua
 }
 
 void VisualScriptEditor::_selected_connect_node(const String &p_text, const String &p_category, const bool p_connecting) {
-	print_error("-------------------------");
+#ifdef OSX_ENABLED
+	bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::META);
+#else
+	bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
+#endif
+
+	print_error("---------**----------------");
 	print_error(p_text);
 	print_error(p_category);
-
 	Vector2 pos = _get_pos_in_graph(port_action_pos);
 
 	Set<int> vn;
@@ -3354,11 +3359,6 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		}
 		vnode = n;
 	} else if (p_category == String("class_property")) {
-#ifdef OSX_ENABLED
-		bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::META);
-#else
-		bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
-#endif
 		Vector<String> property_path = p_text.split(":");
 		if (held_ctrl) {
 			Ref<VisualScriptPropertySet> n;
@@ -3399,6 +3399,98 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			}
 			vnode = n;
 		}
+	} else if (p_category == String("class_constant")) {
+		Vector<String> property_path = p_text.split(":");
+		if (ClassDB::class_exists(property_path[0])) {
+			Ref<VisualScriptClassConstant> n;
+			n.instantiate();
+			n->set_base_type(property_path[0]);
+			n->set_class_constant(property_path[1]);
+			vnode = n;
+		} else {
+			Ref<VisualScriptBasicTypeConstant> n;
+			n.instantiate();
+			if (property_path[0] == "Nil") {
+				n->set_basic_type(Variant::NIL);
+			} else if (property_path[0] == "bool") {
+				n->set_basic_type(Variant::BOOL);
+			} else if (property_path[0] == "int") {
+				n->set_basic_type(Variant::INT);
+			} else if (property_path[0] == "float") {
+				n->set_basic_type(Variant::FLOAT);
+			} else if (property_path[0] == "String") {
+				n->set_basic_type(Variant::STRING);
+			} else if (property_path[0] == "Vector2") {
+				n->set_basic_type(Variant::VECTOR2);
+			} else if (property_path[0] == "Vector2i") {
+				n->set_basic_type(Variant::VECTOR2I);
+			} else if (property_path[0] == "Rect2") {
+				n->set_basic_type(Variant::RECT2);
+			} else if (property_path[0] == "Rect2i") {
+				n->set_basic_type(Variant::RECT2I);
+			} else if (property_path[0] == "Transform2D") {
+				n->set_basic_type(Variant::TRANSFORM2D);
+			} else if (property_path[0] == "Vector3") {
+				n->set_basic_type(Variant::VECTOR3);
+			} else if (property_path[0] == "Vector3i") {
+				n->set_basic_type(Variant::VECTOR3I);
+			} else if (property_path[0] == "Plane") {
+				n->set_basic_type(Variant::PLANE);
+			} else if (property_path[0] == "ABB") {
+				n->set_basic_type(Variant::AABB);
+			} else if (property_path[0] == "Quaternion") {
+				n->set_basic_type(Variant::QUATERNION);
+			} else if (property_path[0] == "Basis") {
+				n->set_basic_type(Variant::BASIS);
+			} else if (property_path[0] == "Transform3D") {
+				n->set_basic_type(Variant::TRANSFORM3D);
+			} else if (property_path[0] == "Color") {
+				n->set_basic_type(Variant::COLOR);
+			} else if (property_path[0] == "RID") {
+				n->set_basic_type(Variant::RID);
+			} else if (property_path[0] == "Object") {
+				n->set_basic_type(Variant::OBJECT);
+			} else if (property_path[0] == "Callable") {
+				n->set_basic_type(Variant::CALLABLE);
+			} else if (property_path[0] == "Signal") {
+				n->set_basic_type(Variant::SIGNAL);
+			} else if (property_path[0] == "StringName") {
+				n->set_basic_type(Variant::STRING_NAME);
+			} else if (property_path[0] == "NodePath") {
+				n->set_basic_type(Variant::NODE_PATH);
+			} else if (property_path[0] == "Dictionary") {
+				n->set_basic_type(Variant::DICTIONARY);
+			} else if (property_path[0] == "Array") {
+				n->set_basic_type(Variant::ARRAY);
+			} else if (property_path[0] == "PackedByteArray") {
+				n->set_basic_type(Variant::PACKED_BYTE_ARRAY);
+			} else if (property_path[0] == "PackedInt32Array") {
+				n->set_basic_type(Variant::PACKED_INT32_ARRAY);
+			} else if (property_path[0] == "PackedInt64Array") {
+				n->set_basic_type(Variant::PACKED_INT64_ARRAY);
+			} else if (property_path[0] == "PackedFloat32Array") {
+				n->set_basic_type(Variant::PACKED_FLOAT32_ARRAY);
+			} else if (property_path[0] == "PackedStringArray") {
+				n->set_basic_type(Variant::PACKED_STRING_ARRAY);
+			} else if (property_path[0] == "PackedVector2Array") {
+				n->set_basic_type(Variant::PACKED_VECTOR2_ARRAY);
+			} else if (property_path[0] == "PackedVector3Array") {
+				n->set_basic_type(Variant::PACKED_VECTOR3_ARRAY);
+			} else if (property_path[0] == "PackedColorArray") {
+				n->set_basic_type(Variant::PACKED_COLOR_ARRAY);
+			}
+			n->set_basic_type_constant(property_path[1]);
+			vnode = n;
+		}
+
+	} else if (p_category == String("class_signal")) {
+// only use signals that are related to the script!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//ERR_FAIL_COND(p_node.is_null());
+		Vector<String> property_path = p_text.split(":");
+		Ref<VisualScriptEmitSignal> n;
+		n.instantiate();
+		n->set_signal(property_path[1]);
+		vnode = n;
 	} else {
 		print_error("Category not handled: \"" + p_category);
 	}
