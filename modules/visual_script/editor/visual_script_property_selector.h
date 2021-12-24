@@ -118,7 +118,7 @@ public:
 	void select_from_script(const Ref<Script> &p_script, const bool p_connecting = true, bool clear_text = true);
 	void select_from_basic_type(Variant::Type p_type, const bool p_connecting = true, bool clear_text = true);
 	void select_from_action(const String &p_type, const bool p_connecting = true, bool clear_text = true);
-	void select_from_instance(Object *p_instance, const Ref<Script> &p_script, const bool p_connecting = true, const String &p_basetype = "", bool clear_text = true);
+	void select_from_instance(Object *p_instance, const bool p_connecting = true, bool clear_text = true);
 	void select_from_visual_script(const String &p_base, bool clear_text = true);
 
 	void show_window(float p_screen_ratio);

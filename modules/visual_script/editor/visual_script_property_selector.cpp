@@ -391,19 +391,18 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	_update_results();
 }
 
-void VisualScriptPropertySelector::select_from_instance(Object *p_instance, const Ref<Script> &p_script, const bool p_connecting, const String &p_basetype, bool clear_text) {
+void VisualScriptPropertySelector::select_from_instance(Object *p_instance, const bool p_connecting, bool clear_text) {
 	set_title(TTR("Select from instance"));
-	base_type = p_basetype;
-	base_script = p_script->get_path();
+	base_type = p_instance->get_class();
+	const Ref<Script> &p_script = p_instance->get_script();
+	base_script = p_script->get_path().lstrip("res://").quote();
 	type = Variant::NIL;
 	connecting = p_connecting;
-	//	instance = p_instance;
 
 	if (clear_text) {
-		search_box->set_text("");
-	} else {
-		search_box->select_all();
+		search_box->set_text(" ");
 	}
+	search_box->select_all();
 
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);

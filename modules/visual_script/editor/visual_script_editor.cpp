@@ -2428,7 +2428,7 @@ void VisualScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			drop_position = pos;
 			drop_node = node;
 			drop_path = sn->get_path_to(node);
-			new_connect_node_select->select_from_instance(node, node->get_script(), false, node->get_class());
+			new_connect_node_select->select_from_instance(node, false);
 		}
 		undo_redo->add_do_method(this, "_update_graph");
 		undo_redo->add_undo_method(this, "_update_graph");
