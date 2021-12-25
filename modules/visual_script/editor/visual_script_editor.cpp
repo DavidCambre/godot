@@ -3492,7 +3492,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		n->set_signal(property_path[1]);
 		vnode = n;
 	} else {
-		print_error("Category not handled: \"" + p_category);
+		print_error("Category not handled: " + p_category.quote());
 	}
 
 	drop_path = String();

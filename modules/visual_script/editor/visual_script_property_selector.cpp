@@ -245,9 +245,8 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 		} else {
 			search_box->set_text("."); // show all methods
 		}
-	} else {
-		search_box->select_all();
 	}
+	search_box->select_all();
 
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);
@@ -278,11 +277,10 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 		if (p_virtuals_only) {
 			search_box->set_text("_");
 		} else {
-			search_box->set_text("");
+			search_box->set_text(" ");
 		}
-	} else {
-		search_box->select_all();
 	}
+	search_box->select_all();
 
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);
@@ -291,7 +289,7 @@ void VisualScriptPropertySelector::select_from_base_type(const String &p_base, c
 	search_signals->set_pressed(true);
 	search_constants->set_pressed(false);
 	search_properties->set_pressed(true);
-	search_theme_items->set_pressed(true);
+	search_theme_items->set_pressed(false);
 
 	// When class is Input only show inheritors
 	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
@@ -314,10 +312,9 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 
 	if (clear_text) {
 		search_box->set_text("");
-	} else {
-		search_box->select_all();
 	}
-
+	search_box->select_all();
+	
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(true);
 	search_methods->set_pressed(true);
@@ -325,7 +322,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	search_signals->set_pressed(true);
 	search_constants->set_pressed(true);
 	search_properties->set_pressed(true);
-	search_theme_items->set_pressed(true);
+	search_theme_items->set_pressed(false);
 
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated"
 
@@ -375,9 +372,8 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 
 	if (clear_text) {
 		search_box->set_text("");
-	} else {
-		search_box->select_all();
 	}
+	search_box->select_all();
 
 	search_visual_script_nodes->set_pressed(true);
 	search_classes->set_pressed(false);
@@ -422,7 +418,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	search_signals->set_pressed(true);
 	search_constants->set_pressed(true);
 	search_properties->set_pressed(true);
-	search_theme_items->set_pressed(true);
+	search_theme_items->set_pressed(false);
 
 	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
@@ -450,7 +446,7 @@ void VisualScriptPropertySelector::select_from_visual_script(const Ref<Script> &
 	search_signals->set_pressed(true);
 	search_constants->set_pressed(true);
 	search_properties->set_pressed(true);
-	search_theme_items->set_pressed(true);
+	search_theme_items->set_pressed(false);
 
 	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
@@ -774,12 +770,8 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 	matched_item = nullptr;
 	match_highest_score = 0;
 
-	print_error(" selector_ui->base_script");
-	print_error(selector_ui->base_script);
-
 	if (!combined_docs.has(selector_ui->base_script)) {
 		String file_path = "res://" + selector_ui->base_script.unquote(); // EditorHelp::get_doc_data().name to filepath
-		print_error(file_path);
 		Ref<Script> script;
 		script = ResourceLoader::load(file_path);
 		if (!script.is_null()) {
@@ -862,7 +854,6 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes() {
 		} else if (path[1] == "wait") {
 			_add_class_doc(registerd_node_name, "functions", "yield");
 		} else {
-			//		print_error(registerd_node_name);
 			_add_class_doc(registerd_node_name, "functions", "");
 		}
 	} else if (path[0] == "index") {
@@ -1121,14 +1112,9 @@ bool VisualScriptPropertySelector::SearchRunner::_match_is_hidden(DocData::Class
 	if (class_doc.category.begins_with("VisualScript")) {
 		if (class_doc.name.begins_with("flow_control")) {
 			return false;
-			//	} else if (class_doc.name.begins_with("functions")) {
-			//		return true;
-			//	} else if (class_doc.name.begins_with("data")) {
-			//		return true;
 		} else if (class_doc.name.begins_with("operators")) {
 			return !(search_flags & SEARCH_OPERATORS);
 		}
-		//	print_error(class_doc.name);
 		return true;
 	}
 	return false;
