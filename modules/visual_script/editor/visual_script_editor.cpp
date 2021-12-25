@@ -1366,7 +1366,7 @@ void VisualScriptEditor::_create_function() {
 }
 
 void VisualScriptEditor::_add_node_dialog() {
-	_generic_search(script->get_instance_base_type(), graph->get_global_position() + Vector2(55, 80), true);
+	_generic_search(graph->get_global_position() + Vector2(55, 80), true);
 }
 
 void VisualScriptEditor::_add_func_input() {
@@ -1948,14 +1948,14 @@ void VisualScriptEditor::_on_nodes_duplicate() {
 	}
 }
 
-void VisualScriptEditor::_generic_search(String p_base_type, Vector2 pos, bool node_centered) {
+void VisualScriptEditor::_generic_search(Vector2 pos, bool node_centered) {
 	if (node_centered) {
 		port_action_pos = graph->get_size() / 2.0f;
 	} else {
 		port_action_pos = graph->get_viewport()->get_mouse_position() - graph->get_global_position();
 	}
 
-	new_connect_node_select->select_from_visual_script(p_base_type, false); // do not reset text
+	new_connect_node_select->select_from_visual_script(script, false); // do not reset text
 
 	// Ensure that the dialog fits inside the graph.
 	Size2 bounds = graph->get_global_position() + graph->get_size() - new_connect_node_select->get_size();
@@ -1984,8 +1984,8 @@ void VisualScriptEditor::_graph_gui_input(const Ref<InputEvent> &p_event) {
 	if (key.is_valid() && key->is_pressed() && key->get_button_mask() == MouseButton::RIGHT) {
 		saved_position = graph->get_local_mouse_position();
 
-		Point2 gpos = get_screen_position() + get_local_mouse_position();
-		_generic_search(script->get_instance_base_type(), gpos);
+		Point2 gpos = Input::get_singleton()->get_mouse_position();
+		_generic_search(gpos);
 	}
 }
 
@@ -3484,9 +3484,9 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		}
 
 	} else if (p_category == String("class_signal")) {
-// only use signals that are related to the script!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//ERR_FAIL_COND(p_node.is_null());
 		Vector<String> property_path = p_text.split(":");
+		ERR_FAIL_COND(!(script->has_custom_signal(property_path[1]) || ClassDB::has_signal(script->get_instance_base_type(), property_path[1])));
+
 		Ref<VisualScriptEmitSignal> n;
 		n.instantiate();
 		n->set_signal(property_path[1]);
@@ -3989,7 +3989,7 @@ void VisualScriptEditor::_menu_option(int p_what) {
 
 		} break;
 		case EDIT_FIND_NODE_TYPE: {
-			_generic_search(script->get_instance_base_type());
+			_generic_search();
 		} break;
 		case EDIT_COPY_NODES: {
 			_on_nodes_copy();

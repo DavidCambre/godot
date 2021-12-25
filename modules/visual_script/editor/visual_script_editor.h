@@ -236,7 +236,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	bool node_has_sequence_connections(int p_id);
 
-	void _generic_search(String p_base_type = "", Vector2 pos = Vector2(), bool node_centered = false);
+	void _generic_search(Vector2 pos = Vector2(), bool node_centered = false);
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	void _graph_gui_input(const Ref<InputEvent> &p_event);
