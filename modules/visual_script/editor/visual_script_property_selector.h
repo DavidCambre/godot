@@ -119,7 +119,7 @@ public:
 	void select_from_basic_type(Variant::Type p_type, const bool p_connecting = true, bool clear_text = true);
 	void select_from_action(const String &p_type, const bool p_connecting = true, bool clear_text = true);
 	void select_from_instance(Object *p_instance, const bool p_connecting = true, bool clear_text = true);
-	void select_from_visual_script(const String &p_base, bool clear_text = true);
+	void select_from_visual_script(const Ref<Script> &p_script, bool clear_text = true);
 
 	void show_window(float p_screen_ratio);
 
@@ -200,6 +200,7 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	bool _match_is_hidden(DocData::ClassDoc &class_doc);
 	void _match_item(TreeItem *p_item, const String &p_text);
 	void _add_class_doc(String class_name, String inherits, String category);
+	DocData::MethodDoc _get_method_doc(MethodInfo method_info);
 	TreeItem *_create_class_hierarchy(const ClassMatch &p_match);
 	TreeItem *_create_class_item(TreeItem *p_parent, const DocData::ClassDoc *p_doc, bool p_gray);
 	TreeItem *_create_method_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const String &p_text, const DocData::MethodDoc *p_doc);

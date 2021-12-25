@@ -270,7 +270,7 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 void VisualScriptPropertySelector::select_from_base_type(const String &p_base, const String &p_base_script, bool p_virtuals_only, const bool p_connecting, bool clear_text) {
 	set_title(TTR("Select from base type"));
 	base_type = p_base;
-	base_script = p_base_script;
+	base_script = p_base_script.lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	type = Variant::NIL;
 	connecting = p_connecting;
 
@@ -307,7 +307,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 	ERR_FAIL_COND(p_script.is_null());
 
 	base_type = p_script->get_instance_base_type();
-	base_script = p_script->get_path(); // or ""
+	base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	type = Variant::NIL;
 	script = p_script->get_instance_id();
 	connecting = p_connecting;
@@ -404,7 +404,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	if (p_script == nullptr) {
 		base_script = "";
 	} else {
-		base_script = p_script->get_path().lstrip("res://").quote();
+		base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	}
 
 	type = Variant::NIL;
@@ -432,17 +432,16 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	_update_results();
 }
 
-void VisualScriptPropertySelector::select_from_visual_script(const String &p_base, bool clear_text) {
+void VisualScriptPropertySelector::select_from_visual_script(const Ref<Script> &p_script, bool clear_text) {
 	set_title(TTR("Select from visual script"));
-	base_type = p_base;
-	base_script = "";
+	base_type = p_script->get_instance_base_type();
+	base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	type = Variant::NIL;
 
 	if (clear_text) {
 		search_box->set_text(" ");
-	} else {
-		search_box->select_all();
 	}
+	search_box->select_all();
 
 	search_visual_script_nodes->set_pressed(true);
 	search_classes->set_pressed(false);
@@ -774,6 +773,51 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 	matches.clear();
 	matched_item = nullptr;
 	match_highest_score = 0;
+
+	print_error(" selector_ui->base_script");
+	print_error(selector_ui->base_script);
+
+	if (!combined_docs.has(selector_ui->base_script)) {
+		String file_path = "res://" + selector_ui->base_script.unquote(); // EditorHelp::get_doc_data().name to filepath
+		print_error(file_path);
+		Ref<Script> script;
+		script = ResourceLoader::load(file_path);
+		if (!script.is_null()) {
+			DocData::ClassDoc class_doc = DocData::ClassDoc();
+
+			class_doc.name = selector_ui->base_script;
+
+			class_doc.inherits = script->get_instance_base_type();
+			class_doc.brief_description = ".vs files not suported by EditorHelp::get_doc_data()";
+			class_doc.description = "";
+
+			Object *obj = ObjectDB::get_instance(script->get_instance_id());
+			if (Object::cast_to<Script>(obj)) {
+				List<MethodInfo> methods;
+				Object::cast_to<Script>(obj)->get_script_method_list(&methods);
+				for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
+					class_doc.methods.push_back(_get_method_doc(M->get()));
+				}
+
+				List<MethodInfo> signals;
+				Object::cast_to<Script>(obj)->get_script_signal_list(&signals);
+				for (List<MethodInfo>::Element *S = signals.front(); S; S = S->next()) {
+					class_doc.signals.push_back(_get_method_doc(S->get()));
+				}
+
+				List<PropertyInfo> propertys;
+				Object::cast_to<Script>(obj)->get_script_property_list(&propertys);
+				for (List<PropertyInfo>::Element *P = propertys.front(); P; P = P->next()) {
+					DocData::PropertyDoc pd = DocData::PropertyDoc();
+					pd.name = P->get().name;
+					pd.type = Variant::get_type_name(P->get().type);
+					class_doc.properties.push_back(pd);
+				}
+			}
+			combined_docs.insert(class_doc.name, class_doc);
+		}
+	}
+
 	return true;
 }
 
@@ -1115,6 +1159,20 @@ void VisualScriptPropertySelector::SearchRunner::_add_class_doc(String class_nam
 	class_doc.category = "VisualScriptNode/" + category;
 	class_doc.brief_description = category;
 	combined_docs.insert(class_doc.name, class_doc);
+}
+
+DocData::MethodDoc VisualScriptPropertySelector::SearchRunner::_get_method_doc(MethodInfo method_info) {
+	DocData::MethodDoc method_doc = DocData::MethodDoc();
+	method_doc.name = method_info.name;
+	method_doc.return_type = Variant::get_type_name(method_info.return_val.type);
+	method_doc.description = "No description available";
+	for (List<PropertyInfo>::Element *P = method_info.arguments.front(); P; P = P->next()) {
+		DocData::ArgumentDoc argument_doc = DocData::ArgumentDoc();
+		argument_doc.name = P->get().name;
+		argument_doc.type = Variant::get_type_name(P->get().type);
+		method_doc.arguments.push_back(argument_doc);
+	}
+	return method_doc;
 }
 
 TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_hierarchy(const ClassMatch &p_match) {
