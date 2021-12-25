@@ -3491,7 +3491,8 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		n.instantiate();
 		n->set_signal(property_path[1]);
 		vnode = n;
-	} else {
+	}
+	if (vnode == nullptr) {
 		print_error("Category not handled: " + p_category.quote());
 	}
 

@@ -397,6 +397,8 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	base_type = p_instance->get_class();
 
 	const Ref<Script> &p_script = p_instance->get_script();
+	String test = p_script->get_path();
+
 	if (p_script == nullptr) {
 		base_script = "";
 	} else {
@@ -809,7 +811,6 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 			combined_docs.insert(class_doc.name, class_doc);
 		}
 	}
-
 	return true;
 }
 
@@ -829,7 +830,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes() {
 
 	Vector<String> path = registerd_node_name.split("/");
 	if (path[0] == "constants") {
-		/* constants are to be created by the using the Datadocs */
+		_add_class_doc(registerd_node_name, "", "constants");
 	} else if (path[0] == "custom") {
 		_add_class_doc(registerd_node_name, "", "custom");
 	} else if (path[0] == "data") {
