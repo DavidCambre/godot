@@ -384,7 +384,7 @@ void VisualScriptPropertySelector::select_from_action(const String &p_type, cons
 	search_properties->set_pressed(false);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
+	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
 	results_tree->clear();
 	show_window(.5f);
@@ -422,7 +422,7 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	search_properties->set_pressed(true);
 	search_theme_items->set_pressed(false);
 
-	scope_combo->select(0); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
+	scope_combo->select(2); //id0 = "Search Related" //id2 = "Search Base" //id3 = "Search Inheriters" //id4 = "Search Unrelated" //id5 "Search All"
 
 	results_tree->clear();
 	show_window(.5f);
@@ -583,7 +583,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	hbox->add_child(scope_combo);
 
 	search_box = memnew(LineEdit);
-	search_box->set_tooltip(TTR("Enter \" \" to show all filterd options\nEnter \".\" to show all filterd methods, operators and constructors\nUse CTRL_KEY to drop preperty setters"));
+	search_box->set_tooltip(TTR("Enter \" \" to show all filterd options\nEnter \".\" to show all filterd methods, operators and constructors\nUse CTRL_KEY to drop property setters"));
 	search_box->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->connect("text_changed", callable_mp(this, &VisualScriptPropertySelector::_update_results_s));
@@ -1115,6 +1115,8 @@ bool VisualScriptPropertySelector::SearchRunner::_match_is_hidden(DocData::Class
 			return false;
 		} else if (class_doc.name.begins_with("operators")) {
 			return !(search_flags & SEARCH_OPERATORS);
+		} else if (class_doc.name.begins_with("functions/built_in/print")) {
+			return false;
 		}
 		return true;
 	}
