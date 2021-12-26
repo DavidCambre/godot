@@ -473,7 +473,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	add_child(vbox);
 
 	HBoxContainer *hbox = memnew(HBoxContainer);
-	hbox->set_alignment(hbox->ALIGN_CENTER);
+	hbox->set_alignment(hbox->ALIGNMENT_CENTER);
 	vbox->add_child(hbox);
 
 	case_sensitive_button = memnew(Button);
