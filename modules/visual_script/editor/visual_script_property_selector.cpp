@@ -314,7 +314,7 @@ void VisualScriptPropertySelector::select_from_script(const Ref<Script> &p_scrip
 		search_box->set_text("");
 	}
 	search_box->select_all();
-	
+
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(true);
 	search_methods->set_pressed(true);
@@ -767,7 +767,6 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_init() {
 
 bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 	combined_docs = EditorHelp::get_doc_data()->class_list;
-	iterator_doc = combined_docs.front();
 	matches.clear();
 	matched_item = nullptr;
 	match_highest_score = 0;
@@ -811,6 +810,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 			combined_docs.insert(class_doc.name, class_doc);
 		}
 	}
+	iterator_doc = combined_docs.front();
 	return true;
 }
 
