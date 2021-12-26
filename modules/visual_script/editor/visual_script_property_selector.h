@@ -131,7 +131,7 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 		PHASE_INIT,
 		PHASE_MATCH_CLASSES_INIT,
 		PHASE_NODE_CLASSES_INIT,
-		PHASE_NODE_CLASSES,
+		PHASE_NODE_CLASSES_BUILD,
 		PHASE_MATCH_CLASSES,
 		PHASE_CLASS_ITEMS_INIT,
 		PHASE_CLASS_ITEMS,
@@ -187,7 +187,7 @@ class VisualScriptPropertySelector::SearchRunner : public RefCounted {
 	bool _phase_init();
 	bool _phase_match_classes_init();
 	bool _phase_node_classes_init();
-	bool _phase_node_classes();
+	bool _phase_node_classes_build();
 	bool _phase_match_classes();
 	bool _phase_class_items_init();
 	bool _phase_class_items();

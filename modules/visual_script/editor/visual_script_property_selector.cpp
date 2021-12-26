@@ -691,8 +691,8 @@ bool VisualScriptPropertySelector::SearchRunner::_slice() {
 		case PHASE_NODE_CLASSES_INIT:
 			phase_done = _phase_node_classes_init();
 			break;
-		case PHASE_NODE_CLASSES:
-			phase_done = _phase_node_classes();
+		case PHASE_NODE_CLASSES_BUILD:
+			phase_done = _phase_node_classes_build();
 			break;
 		case PHASE_MATCH_CLASSES:
 			phase_done = _phase_match_classes();
@@ -821,7 +821,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes_init() {
 	return true;
 }
 
-bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes() {
+bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes_build() {
 	if (vs_nodes.is_empty()) {
 		return true;
 	}
