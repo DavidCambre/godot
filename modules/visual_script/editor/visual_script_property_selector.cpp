@@ -397,8 +397,6 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 	base_type = p_instance->get_class();
 
 	const Ref<Script> &p_script = p_instance->get_script();
-	String test = p_script->get_path();
-
 	if (p_script == nullptr) {
 		base_script = "";
 	} else {
@@ -433,7 +431,11 @@ void VisualScriptPropertySelector::select_from_instance(Object *p_instance, cons
 void VisualScriptPropertySelector::select_from_visual_script(const Ref<Script> &p_script, bool clear_text) {
 	set_title(TTR("Select from visual script"));
 	base_type = p_script->get_instance_base_type();
-	base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
+	if (p_script == nullptr) {
+		base_script = "";
+	} else {
+		base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
+	}
 	type = Variant::NIL;
 
 	if (clear_text) {
