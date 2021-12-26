@@ -239,6 +239,7 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	base_script = "";
 	type = Variant::NIL;
 	connecting = p_connecting;
+
 	if (clear_text) {
 		if (p_virtuals_only) {
 			search_box->set_text("._"); // show all _methods
@@ -437,6 +438,7 @@ void VisualScriptPropertySelector::select_from_visual_script(const Ref<Script> &
 		base_script = p_script->get_path().lstrip("res://").quote(); // filepath to EditorHelp::get_doc_data().name
 	}
 	type = Variant::NIL;
+	connecting = false;
 
 	if (clear_text) {
 		search_box->set_text(" ");
