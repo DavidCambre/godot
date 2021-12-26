@@ -3302,10 +3302,6 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 #else
 	bool held_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
 #endif
-
-	print_error("---------**----------------");
-	print_error(p_text);
-	print_error(p_category);
 	Vector2 pos = _get_pos_in_graph(port_action_pos);
 
 	Set<int> vn;
