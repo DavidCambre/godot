@@ -3640,26 +3640,6 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 				base_type = property_path[0];
 			} else if (ClassDB::is_parent_class(property_path[0], base_type)) {
 				base_type = property_path[0];
-				/* WIP add typecast WIP
-				IF held_ctrl
-				Ref<VisualScriptNode> tc = VisualScriptLanguage::singleton->create_node_from_name("flow_control/type_cast");
-				Variant::Type type = Variant::OBJECT;
-				Object::cast_to<VisualScriptTypeCast>(tc.ptr())->set_base_type(property_path[0]);
-
-				int new_id = script->get_available_id();
-				undo_redo->create_action(TTR("Add Node"));
-				undo_redo->add_do_method(script.ptr(), "add_node", new_id, tc, pos);
-				undo_redo->add_undo_method(script.ptr(), "remove_node", new_id);
-				undo_redo->add_do_method(this, "_update_graph", new_id);
-				undo_redo->add_undo_method(this, "_update_graph", new_id);
-				undo_redo->commit_action();
-
-				connect_seq(vnode_old, tc, port_action_new_node);
-				connect_data(vnode_old, tc, port_action_new_node);
-
-				connect_seq(tc, vnode, port_action_new_node);
-				connect_data(tc, vnode, port_action_new_node);
-				*/
 			}
 			connect_seq(vnode_old, vnode, port_action_new_node);
 			connect_data(vnode_old, vnode, port_action_new_node);
