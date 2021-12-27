@@ -3492,9 +3492,6 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		print_error("Category not handled: " + p_category.quote());
 	}
 
-	drop_path = String();
-	drop_node = nullptr;
-
 	int new_id = script->get_available_id();
 	undo_redo->create_action(TTR("Add Node"));
 	undo_redo->add_do_method(script.ptr(), "add_node", new_id, vnode, pos);
@@ -3630,6 +3627,17 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 				base_script = Object::cast_to<VisualScriptPropertyGet>(vnode_old.ptr())->get_base_script();
 			}
 		}
+
+		if (!p_connecting) {
+			Vector<String> property_path = p_text.split(":");
+			if (ClassDB::is_parent_class(script->get_instance_base_type(), property_path[0]) || script->get_path().ends_with(property_path[0].unquote())) {
+				base_type = script->get_instance_base_type();
+				base_script = script->get_path();
+			} else {
+				base_type = property_path[0];
+			}
+		}
+
 		if (vnode_old.is_valid() && p_connecting) {
 			Vector<String> property_path = p_text.split(":");
 			if (base_type == "") {
@@ -3654,6 +3662,10 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		Object::cast_to<VisualScriptPropertyGet>(vnode.ptr())->set_base_type(base_type);
 		Object::cast_to<VisualScriptPropertyGet>(vnode.ptr())->set_base_script(base_script);
 	}
+
+	drop_path = String();
+	drop_node = nullptr;
+
 	_update_graph(port_action_new_node);
 }
 
