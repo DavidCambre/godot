@@ -775,7 +775,10 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_match_classes_init() {
 	matched_item = nullptr;
 	match_highest_score = 0;
 
-	if (!combined_docs.has(selector_ui->base_script)) {
+	if (
+			(selector_ui->base_script.unquote() != "") &&
+			(selector_ui->base_script.unquote() != ".") &&
+			!combined_docs.has(selector_ui->base_script)) {
 		String file_path = "res://" + selector_ui->base_script.unquote(); // EditorHelp::get_doc_data().name to filepath
 		Ref<Script> script;
 		script = ResourceLoader::load(file_path);
