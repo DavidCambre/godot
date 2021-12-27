@@ -110,6 +110,10 @@ void VisualScriptPropertySelector::_item_selected() {
 		return;
 	}
 	String name = item->get_metadata(0);
+	print_error("item->get_metadata(0)");
+	print_error(item->get_metadata(0));
+	print_error("item->get_metadata(1)");
+	print_error(item->get_metadata(1));
 
 	String class_type;
 	if (type != Variant::NIL) {
@@ -607,7 +611,7 @@ VisualScriptPropertySelector::VisualScriptPropertySelector() {
 	results_tree->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	results_tree->set_select_mode(Tree::SELECT_ROW);
 	results_tree->connect("item_activated", callable_mp(this, &VisualScriptPropertySelector::_confirmed));
-	results_tree->connect("cell_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
+	results_tree->connect("item_selected", callable_mp(this, &VisualScriptPropertySelector::_item_selected));
 	vbox->add_child(results_tree);
 
 	help_bit = memnew(EditorHelpBit);
