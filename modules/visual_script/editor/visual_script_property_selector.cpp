@@ -98,8 +98,6 @@ void VisualScriptPropertySelector::_confirmed() {
 	if (!ti) {
 		return;
 	}
-	//	print_error(ti->get_metadata(0));
-	//	print_error(ti->get_metadata(1));
 	emit_signal(SNAME("selected"), ti->get_metadata(0), ti->get_metadata(1), connecting);
 	set_visible(false);
 }

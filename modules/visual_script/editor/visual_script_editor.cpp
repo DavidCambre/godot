@@ -3336,7 +3336,15 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		vnode = n;
 	}
 
-	if (p_category == String("class_method")) {
+	if (p_category == String("Class") && !p_connecting) {
+		Ref<VisualScriptFunctionCall> n;
+		n.instantiate();
+		n->set_call_mode(VisualScriptFunctionCall::CALL_MODE_SINGLETON);
+		n->set_singleton("ClassDB");
+		n->set_function("instantiate");
+		// Did not find a way to edit the input port value
+		vnode = n;
+	} else if (p_category == String("class_method")) {
 		Ref<VisualScriptFunctionCall> n;
 		n.instantiate();
 		if (!drop_path.is_empty()) {
@@ -3504,7 +3512,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 
 	Ref<VisualScriptNode> vsn = script->get_node(port_action_new_node);
 
-	if (Object::cast_to<VisualScriptFunctionCall>(vsn.ptr())) {
+	if (Object::cast_to<VisualScriptFunctionCall>(vsn.ptr()) && p_category != "Class") {
 		Vector<String> property_path = p_text.split(":");
 		String class_of_method = property_path[0];
 		String method_name = property_path[1];
