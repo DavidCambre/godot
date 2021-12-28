@@ -3636,13 +3636,21 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			}
 		}
 
-		if (!p_connecting) {
-			Vector<String> property_path = p_text.split(":");
-			if (ClassDB::is_parent_class(script->get_instance_base_type(), property_path[0]) || script->get_path().ends_with(property_path[0].unquote())) {
+		Vector<String> property_path = p_text.split(":");
+		if (ClassDB::is_parent_class(script->get_instance_base_type(), property_path[0]) || script->get_path().ends_with(property_path[0].unquote())) {
+			if (!p_connecting) {
 				base_type = script->get_instance_base_type();
 				base_script = script->get_path();
-			} else {
-				base_type = property_path[0];
+			}
+		} else {
+			base_type = property_path[0];
+			base_script = "";
+		}
+		
+		if (drop_node) {
+			Ref<Script> script = drop_node->get_script();
+			if (script != nullptr) {
+				base_script = script->get_path();
 			}
 		}
 
