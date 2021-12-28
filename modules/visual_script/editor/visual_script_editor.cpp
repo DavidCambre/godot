@@ -3646,7 +3646,7 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 			base_type = property_path[0];
 			base_script = "";
 		}
-		
+
 		if (drop_node) {
 			Ref<Script> script = drop_node->get_script();
 			if (script != nullptr) {
@@ -3655,7 +3655,6 @@ void VisualScriptEditor::_selected_connect_node(const String &p_text, const Stri
 		}
 
 		if (vnode_old.is_valid() && p_connecting) {
-			Vector<String> property_path = p_text.split(":");
 			if (base_type == "") {
 				base_type = property_path[0];
 			} else if (ClassDB::is_parent_class(property_path[0], base_type)) {
