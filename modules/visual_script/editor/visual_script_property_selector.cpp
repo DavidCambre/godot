@@ -103,106 +103,11 @@ void VisualScriptPropertySelector::_confirmed() {
 }
 
 void VisualScriptPropertySelector::_item_selected() {
-	help_bit->set_text("");
-
-	TreeItem *item = results_tree->get_selected();
-	if (!item) {
-		return;
-	}
-	String name = item->get_metadata(0);
-	print_error("item->get_metadata(0)");
-	print_error(item->get_metadata(0));
-	print_error("item->get_metadata(1)");
-	print_error(item->get_metadata(1));
-
-	String class_type;
-	if (type != Variant::NIL) {
-		class_type = Variant::get_type_name(type);
-
+	if (results_tree->get_selected()->has_meta("description")) {
+		help_bit->set_text(results_tree->get_selected()->get_meta("description"));
 	} else {
-		class_type = base_type;
+		help_bit->set_text("No description available");
 	}
-
-	DocTools *dd = EditorHelp::get_doc_data();
-	String text;
-
-	String at_class = class_type;
-
-	while (!at_class.is_empty()) {
-		Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(at_class);
-		if (E) {
-			for (int i = 0; i < E->get().properties.size(); i++) {
-				if (E->get().properties[i].name == name) {
-					text = DTR(E->get().properties[i].description);
-				}
-			}
-		}
-
-		at_class = ClassDB::get_parent_class_nocheck(at_class);
-	}
-	at_class = class_type;
-
-	while (!at_class.is_empty()) {
-		Map<String, DocData::ClassDoc>::Element *C = dd->class_list.find(at_class);
-		if (C) {
-			for (int i = 0; i < C->get().methods.size(); i++) {
-				if (C->get().methods[i].name == name) {
-					text = DTR(C->get().methods[i].description);
-				}
-			}
-		}
-
-		at_class = ClassDB::get_parent_class_nocheck(at_class);
-	}
-	Vector<String> functions = name.rsplit("/", false);
-	at_class = functions.size() > 3 ? functions[functions.size() - 2] : class_type;
-	Map<String, DocData::ClassDoc>::Element *T = dd->class_list.find(at_class);
-	if (T) {
-		for (int i = 0; i < T->get().methods.size(); i++) {
-			if (T->get().methods[i].name == functions[functions.size() - 1]) {
-				text = DTR(T->get().methods[i].description);
-			}
-		}
-	}
-
-	List<String> *names = memnew(List<String>);
-	VisualScriptLanguage::singleton->get_registered_node_names(names);
-	if (names->find(name) != nullptr) {
-		Ref<VisualScriptOperator> operator_node = VisualScriptLanguage::singleton->create_node_from_name(name);
-		if (operator_node.is_valid()) {
-			Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(operator_node->get_class_name());
-			if (F) {
-				text = Variant::get_operator_name(operator_node->get_operator());
-			}
-		}
-		Ref<VisualScriptTypeCast> typecast_node = VisualScriptLanguage::singleton->create_node_from_name(name);
-		if (typecast_node.is_valid()) {
-			Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(typecast_node->get_class_name());
-			if (F) {
-				text = DTR(F->get().description);
-			}
-		}
-
-		Ref<VisualScriptBuiltinFunc> builtin_node = VisualScriptLanguage::singleton->create_node_from_name(name);
-		if (builtin_node.is_valid()) {
-			Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(builtin_node->get_class_name());
-			if (F) {
-				for (int i = 0; i < F->get().constants.size(); i++) {
-					if (F->get().constants[i].value.to_int() == int(builtin_node->get_func())) {
-						text = DTR(F->get().constants[i].description);
-					}
-				}
-			}
-		}
-	}
-
-	memdelete(names);
-
-	if (text.is_empty()) {
-		return;
-	}
-
-	help_bit->set_text(text);
 }
 
 void VisualScriptPropertySelector::_hide_requested() {
@@ -1270,7 +1175,7 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_method_item(TreeIt
 		}
 	}
 	tooltip += ")";
-	return _create_member_item(p_parent, p_class_doc->name, "MemberMethod", p_doc->name, p_text, TTRC("Method"), "method", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberMethod", p_doc->name, p_text, TTRC("Method"), "method", tooltip, p_doc->description);
 }
 
 TreeItem *VisualScriptPropertySelector::SearchRunner::_create_signal_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::MethodDoc *p_doc) {
@@ -1286,27 +1191,27 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_signal_item(TreeIt
 		}
 	}
 	tooltip += ")";
-	return _create_member_item(p_parent, p_class_doc->name, "MemberSignal", p_doc->name, p_doc->name, TTRC("Signal"), "signal", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberSignal", p_doc->name, p_doc->name, TTRC("Signal"), "signal", tooltip, p_doc->description);
 }
 
 TreeItem *VisualScriptPropertySelector::SearchRunner::_create_constant_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ConstantDoc *p_doc) {
 	String tooltip = p_class_doc->name + "." + p_doc->name;
-	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_doc->name, p_doc->name, TTRC("Constant"), "constant", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberConstant", p_doc->name, p_doc->name, TTRC("Constant"), "constant", tooltip, p_doc->description);
 }
 
 TreeItem *VisualScriptPropertySelector::SearchRunner::_create_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::PropertyDoc *p_doc) {
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
 	tooltip += "\n    " + p_class_doc->name + "." + p_doc->setter + "(value) setter";
 	tooltip += "\n    " + p_class_doc->name + "." + p_doc->getter + "() getter";
-	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, p_doc->name, TTRC("Property"), "property", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberProperty", p_doc->name, p_doc->name, TTRC("Property"), "property", tooltip, p_doc->description);
 }
 
 TreeItem *VisualScriptPropertySelector::SearchRunner::_create_theme_property_item(TreeItem *p_parent, const DocData::ClassDoc *p_class_doc, const DocData::ThemeItemDoc *p_doc) {
 	String tooltip = p_doc->type + " " + p_class_doc->name + "." + p_doc->name;
-	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, p_doc->name, TTRC("Theme Property"), "theme_item", tooltip);
+	return _create_member_item(p_parent, p_class_doc->name, "MemberTheme", p_doc->name, p_doc->name, TTRC("Theme Property"), "theme_item", tooltip, p_doc->description);
 }
 
-TreeItem *VisualScriptPropertySelector::SearchRunner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip) {
+TreeItem *VisualScriptPropertySelector::SearchRunner::_create_member_item(TreeItem *p_parent, const String &p_class_name, const String &p_icon, const String &p_name, const String &p_text, const String &p_type, const String &p_metatype, const String &p_tooltip, const String &p_description) {
 	Ref<Texture2D> icon;
 	String text;
 	if (search_flags & SEARCH_SHOW_HIERARCHY) {
@@ -1325,6 +1230,7 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_member_item(TreeIt
 	item->set_tooltip(1, p_tooltip);
 	item->set_metadata(0, p_class_name + ":" + p_name);
 	item->set_metadata(1, "class_" + p_metatype);
+	item->set_meta("description", p_description);
 
 	_match_item(item, p_name);
 
