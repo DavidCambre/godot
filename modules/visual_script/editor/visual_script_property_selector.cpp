@@ -150,11 +150,12 @@ void VisualScriptPropertySelector::select_method_from_base_type(const String &p_
 	if (clear_text) {
 		if (p_virtuals_only) {
 			search_box->set_text("._"); // show all _methods
+			search_box->set_caret_column(2);
 		} else {
 			search_box->set_text("."); // show all methods
+			search_box->set_caret_column(1);
 		}
 	}
-	search_box->select_all();
 
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);
