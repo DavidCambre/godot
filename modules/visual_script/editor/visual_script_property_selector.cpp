@@ -257,7 +257,7 @@ void VisualScriptPropertySelector::select_from_basic_type(Variant::Type p_type, 
 	search_visual_script_nodes->set_pressed(false);
 	search_classes->set_pressed(false);
 	search_methods->set_pressed(true);
-	search_operators->set_pressed(false);
+	search_operators->set_pressed(true);
 	search_signals->set_pressed(false);
 	search_constants->set_pressed(true);
 	search_properties->set_pressed(true);
@@ -1018,7 +1018,11 @@ bool VisualScriptPropertySelector::SearchRunner::_match_visual_script(DocData::C
 		}
 		return false;
 	}
+	print_error(class_doc.category);
 	if (class_doc.category.begins_with("VisualScript") && search_flags & SEARCH_VISUAL_SCRIPT_NODES) {
+		return true;
+	}
+	if (class_doc.name.begins_with("operators") && search_flags & SEARCH_OPERATORS) {
 		return true;
 	}
 	return false;
