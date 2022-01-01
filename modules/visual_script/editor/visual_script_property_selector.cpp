@@ -764,9 +764,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes_build() {
 				_add_class_doc(registerd_node_name, path[2].substr(0, path[2].find_char('(')), "constructors_class");
 			}
 		} else if (path[1] == "deconstruct") {
-			if (search_flags & SEARCH_CLASSES) {
-				_add_class_doc(registerd_node_name, "functions", "deconstruct_class");
-			}
+			_add_class_doc(registerd_node_name, "", "deconstruct");
 		} else if (path[1] == "wait") {
 			_add_class_doc(registerd_node_name, "functions", "yield");
 		} else {
@@ -1018,13 +1016,18 @@ bool VisualScriptPropertySelector::SearchRunner::_match_visual_script(DocData::C
 		}
 		return false;
 	}
-	print_error(class_doc.category);
 	if (class_doc.category.begins_with("VisualScript") && search_flags & SEARCH_VISUAL_SCRIPT_NODES) {
 		return true;
 	}
 	if (class_doc.name.begins_with("operators") && search_flags & SEARCH_OPERATORS) {
 		return true;
 	}
+	if (class_doc.category.begins_with("VisualScriptNode/deconstruct")) {
+		if (class_doc.name.find(selector_ui->base_type, 0) > -1) {
+			return true;
+		}
+	}
+
 	return false;
 }
 
@@ -1122,6 +1125,9 @@ TreeItem *VisualScriptPropertySelector::SearchRunner::_create_class_item(TreeIte
 		Vector<String> path = p_doc->name.split("/");
 		icon = ui_service->get_theme_icon("VisualScript", "EditorIcons");
 		text_0 = path[path.size() - 1];
+		if (p_doc->category.begins_with("VisualScriptNode/deconstruct")) {
+			text_0 = "deconstruct " + text_0;
+		}
 		text_1 = "VisualScriptNode";
 		what = "VisualScriptNode";
 		details = p_doc->name;
