@@ -759,9 +759,7 @@ bool VisualScriptPropertySelector::SearchRunner::_phase_node_classes_build() {
 				_add_class_doc(registerd_node_name, path[2], "by_type_class");
 			}
 		} else if (path[1] == "constructors") {
-			if (search_flags & SEARCH_CLASSES) {
-				_add_class_doc(registerd_node_name, path[2].substr(0, path[2].find_char('(')), "constructors_class");
-			}
+			_add_class_doc(registerd_node_name, "", "constructors");
 		} else if (path[1] == "deconstruct") {
 			_add_class_doc(registerd_node_name, "", "deconstruct");
 		} else if (path[1] == "wait") {
