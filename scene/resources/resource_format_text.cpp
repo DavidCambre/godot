@@ -1675,16 +1675,11 @@ void ResourceFormatLoaderText::get_recognized_extensions_for_type(const String &
 	if (p_type != "PackedScene") {
 		p_extensions->push_back("tres");
 	}
-
-	if (ClassDB::is_parent_class("LinkerScript", p_type)) {
-		p_extensions->push_back("ls");
-	}
 }
 
 void ResourceFormatLoaderText::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("tscn");
 	p_extensions->push_back("tres");
-	p_extensions->push_back("ls");
 }
 
 bool ResourceFormatLoaderText::handles_type(const String &p_type) const {
@@ -2415,8 +2410,6 @@ bool ResourceFormatSaverText::recognize(const Ref<Resource> &p_resource) const {
 void ResourceFormatSaverText::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
 	if (Ref<PackedScene>(p_resource).is_valid()) {
 		p_extensions->push_back("tscn"); // Text scene.
-	} else if (ClassDB::is_parent_class("LinkerScript", p_resource->get_class_name())) {
-		p_extensions->push_back("ls"); // Linker script.
 	} else {
 		p_extensions->push_back("tres"); // Text resource.
 	}
